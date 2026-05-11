@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "allowImportingTsExtensions": false,
+    "rewriteRelativeImportExtensions": false,
+    "types": ["node", "jest"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.test.ts"]
+}
