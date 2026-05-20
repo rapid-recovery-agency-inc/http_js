@@ -1,6 +1,6 @@
 import { Pool } from 'pg';
 
-import { createLogger, LogLevel } from '../logging/services.js';
+import { createLogger, LogLevel } from '../../shared/logging/services';
 
 const logger = createLogger('postgres', { logLevel: LogLevel.DEBUG });
 

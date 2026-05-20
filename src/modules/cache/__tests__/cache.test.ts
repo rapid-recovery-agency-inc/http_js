@@ -1,10 +1,10 @@
-import { DatabaseCache } from './database-cache.js';
+import { DatabaseCache } from '../database-cache';
 import {
   DEFAULT_EXPIRATION_IN_SECONDS,
   InMemoryCache,
-} from './in-memory-cache.js';
-import { RedisCache } from './redis-cache.js';
-import { isCacheItemValid } from './utils.js';
+} from '../in-memory-cache';
+import { RedisCache } from '../redis-cache';
+import { isCacheItemValid } from '../utils';
 
 class MockQueryPool {
   public readonly query = jest.fn<

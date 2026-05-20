@@ -9,14 +9,14 @@ This repository is a TypeScript utility library for HTTP APIs and microservices.
 ```text
 package consumer
 	-> src/index.ts
-		 -> src/modules/*   for standalone capabilities
-		 -> src/shared/*    for cross-cutting infrastructure
+		 -> src/modules/*   for first-class library features
+		 -> src/shared/*    for cross-cutting infrastructure primitives
 ```
 
 The design intent is:
 
-- Put top-level reusable product capabilities in `src/modules`.
-- Put infrastructure reused by multiple modules in `src/shared`.
+- Put first-class library features in `src/modules` — these are capabilities consumers import and use directly.
+- Put lightweight infrastructure primitives in `src/shared` — these are request/context plumbing reused by multiple modules but not primary features in their own right.
 - Keep the public package surface stable through `src/index.ts` even when internals move.
 
 ## Repository Layout
@@ -28,27 +28,27 @@ The design intent is:
 | `src/index.ts` | Package-level public API barrel               |
 | `README.md`    | User-facing overview and development commands |
 
-### Standalone Modules
+### Feature Modules
 
 | Path                         | Role                                                       |
 | ---------------------------- | ---------------------------------------------------------- |
 | `src/modules/cache`          | Cache interfaces and cache backend implementations         |
-| `src/modules/e2e-testing`    | Isolated PostgreSQL test harness utilities                 |
 | `src/modules/environment`    | Schema-driven environment loading and coercion             |
 | `src/modules/exceptions`     | Request-aware exception handling and response builders     |
 | `src/modules/hmac`           | HMAC signing and signature verification                    |
+| `src/modules/logging`        | Structured logger factory with level filtering             |
+| `src/modules/postgres`       | Writer/reader pool helpers and connection string utilities |
 | `src/modules/rate-limiter`   | Rule lookup, count aggregation, and rate-limit enforcement |
 | `src/modules/request-logger` | Console/database request logging helpers                   |
 
 ### Shared Infrastructure
 
-| Path                  | Role                                                       |
-| --------------------- | ---------------------------------------------------------- |
-| `src/shared/context`  | Request-scoped context creation and attachment             |
-| `src/shared/logging`  | Cached logger factory and structured log types             |
-| `src/shared/postgres` | Writer/reader pool helpers and connection string utilities |
-| `src/shared/requests` | Request extraction and request validation helpers          |
-| `src/shared/utils`    | Protocol helpers and supporting utility areas              |
+| Path                     | Role                                              |
+| ------------------------ | ------------------------------------------------- |
+| `src/shared/context`     | Request-scoped context creation and attachment    |
+| `src/shared/e2e-testing` | Isolated PostgreSQL test harness utilities        |
+| `src/shared/requests`    | Request extraction and request validation helpers |
+| `src/shared/utils`       | Protocol helpers and supporting utility areas     |
 
 ## Navigation
 
@@ -61,19 +61,19 @@ The design intent is:
 - Environment: [src/modules/environment](src/modules/environment)
 - Exceptions: [src/modules/exceptions](src/modules/exceptions)
 - HMAC: [src/modules/hmac](src/modules/hmac)
+- Logging: [src/modules/logging](src/modules/logging)
+- Postgres: [src/modules/postgres](src/modules/postgres)
 - Rate limiter: [src/modules/rate-limiter](src/modules/rate-limiter)
 - Request logger: [src/modules/request-logger](src/modules/request-logger)
 - Context: [src/shared/context](src/shared/context)
-- Logging: [src/shared/logging](src/shared/logging)
-- Postgres: [src/shared/postgres](src/shared/postgres)
 - Requests: [src/shared/requests](src/shared/requests)
 - Shared utils: [src/shared/utils](src/shared/utils)
 
 ## Working Rules
 
 - Keep public exports stable through `src/index.ts`.
-- Put top-level capabilities in `src/modules`.
-- Put reusable infrastructure in `src/shared`.
+- Put first-class library features in `src/modules`.
+- Put cross-cutting infrastructure primitives in `src/shared`.
 - Keep AWS helpers in `src/shared/utils/aws`.
 - Keep timeout-style helpers in `src/shared/utils/async`.
 - Prefer colocated tests inside the owning folder.

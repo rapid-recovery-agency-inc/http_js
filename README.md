@@ -9,16 +9,16 @@ src/
 ├── index.ts
 ├── modules/
 │   ├── cache/
-│   ├── e2e-testing/
 │   ├── environment/
 │   ├── exceptions/
 │   ├── hmac/
+│   ├── logging/
+│   ├── postgres/
 │   ├── rate-limiter/
 │   └── request-logger/
 └── shared/
 	├── context/
-	├── logging/
-	├── postgres/
+	├── e2e-testing/
 	├── requests/
 	└── utils/
 		├── async/
@@ -31,8 +31,8 @@ src/
 
 ## Layout Rules
 
-- Put standalone library capabilities in `src/modules`.
-- Put cross-cutting infrastructure in `src/shared`.
+- Put first-class library features in `src/modules`.
+- Put cross-cutting infrastructure primitives in `src/shared`.
 - Keep the public package API stable through `src/index.ts`.
 - Use `src/shared/utils/async` for timeout-style helpers.
 - Use `src/shared/utils/aws` for AWS Secrets Manager helpers.
@@ -43,15 +43,14 @@ src/
 - `environment`: schema-based environment loading and coercion
 - `exceptions`: request-aware exception handlers and content builders
 - `hmac`: signing and signature verification helpers
+- `logging`: structured logger factory with level filtering and log-level coercion
+- `postgres`: pooled writer/reader connection helpers
 - `request-logger`: console and database request logging
 - `rate-limiter`: rule lookup, count queries, and middleware
-- `e2e-testing`: isolated PostgreSQL test harness and migration loading
 
 ## Shared
 
 - `context`: request-scoped context factories and state attachment
-- `logging`: cached logger factory and log types
-- `postgres`: pooled writer/reader helpers
 - `requests`: request extraction and validation
 - `utils`: protocol helpers plus nested `async` and `aws` utilities
 

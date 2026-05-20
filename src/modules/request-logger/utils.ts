@@ -1,5 +1,5 @@
-import { DEFAULT_REQUEST_TABLE } from './constants.js';
-import type { RequestLoggerArgs } from './types.js';
+import { DEFAULT_REQUEST_TABLE } from './constants';
+import type { RequestLoggerArgs } from './types';
 
 const TABLE_PREFIX_RE = /^[A-Za-z_][A-Za-z0-9_]*$/u;
 

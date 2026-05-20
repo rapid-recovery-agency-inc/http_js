@@ -2,13 +2,10 @@ import {
   HMAC_INVALID_SIGNATURE,
   HMAC_MISSING_SIGNATURE,
   HMAC_UNSUPPORTED_METHOD,
-} from './constants.js';
-import {
-  buildHmacFactoryDependency,
-  requireHmacSignature,
-} from './services.js';
-import type { HMACRequestLike } from './types.js';
-import { sign } from './utils.js';
+} from '../constants';
+import { buildHmacFactoryDependency, requireHmacSignature } from '../services';
+import type { HMACRequestLike } from '../types';
+import { sign } from '../utils';
 
 class TestHeaders {
   private readonly entries: Record<string, string>;

@@ -1,4 +1,4 @@
-import { timeout } from './timeout.js';
+import { timeout } from '../timeout';
 
 describe('async', () => {
   beforeEach(() => {

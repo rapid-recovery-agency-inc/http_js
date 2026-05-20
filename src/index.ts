@@ -1,15 +1,12 @@
 export {
   DEFAULT_EXPIRATION_IN_SECONDS,
   InMemoryCache,
-} from './modules/cache/in-memory-cache.js';
-export { DatabaseCache } from './modules/cache/database-cache.js';
-export {
-  RedisCache,
-  type AsyncRedisClient,
-} from './modules/cache/redis-cache.js';
-export { isCacheItemValid } from './modules/cache/utils.js';
-export type { AsyncCache, Cache } from './modules/cache/types.js';
-export type { CacheItem } from './modules/cache/models.js';
+} from './modules/cache/in-memory-cache';
+export { DatabaseCache } from './modules/cache/database-cache';
+export { RedisCache, type AsyncRedisClient } from './modules/cache/redis-cache';
+export { isCacheItemValid } from './modules/cache/utils';
+export type { AsyncCache, Cache } from './modules/cache/types';
+export type { CacheItem } from './modules/cache/models';
 
 export {
   Context,
@@ -21,7 +18,7 @@ export {
   type ContextOptions,
   type ContextRequestLike,
   type ContextState,
-} from './shared/context/services.js';
+} from './shared/context/services';
 
 export {
   CustomAsyncTestCase,
@@ -31,7 +28,7 @@ export {
   type Migration,
   type PoolFactory,
   type TestDatabasePool,
-} from './modules/e2e-testing/services.js';
+} from './shared/e2e-testing/services';
 
 export {
   buildClientErrorContent,
@@ -49,26 +46,26 @@ export {
   type LogLevelName,
   type RequestMetadata,
   type ValidationErrorLike,
-} from './modules/exceptions/services.js';
+} from './modules/exceptions/services';
 
 export {
   HMAC_INVALID_SIGNATURE,
   HMAC_MISSING_SIGNATURE,
   HMAC_UNSUPPORTED_METHOD,
-} from './modules/hmac/constants.js';
-export { HMACException } from './modules/hmac/exceptions.js';
+} from './modules/hmac/constants';
+export { HMACException } from './modules/hmac/exceptions';
 export {
   buildHmacFactoryDependency,
   requireHmacSignature,
-} from './modules/hmac/services.js';
-export { sign } from './modules/hmac/utils.js';
+} from './modules/hmac/services';
+export { sign } from './modules/hmac/utils';
 export type {
   HMACEnvironment,
   HMACFactoryDependency,
   HMACRequestLike,
-} from './modules/hmac/types.js';
+} from './modules/hmac/types';
 
-export { timeout, type TimeoutWrapped } from './shared/utils/async/timeout.js';
+export { timeout, type TimeoutWrapped } from './shared/utils/async/timeout';
 
 export {
   cleanupConnectionsPools,
@@ -82,7 +79,7 @@ export {
   warmUpConnectionsPools,
   type PostgresEnvironment,
   type PostgresPool,
-} from './shared/postgres/services.js';
+} from './modules/postgres/services';
 
 export {
   EnvironmentManager,
@@ -99,7 +96,45 @@ export {
   type EnvironmentSchema,
   type InferEnvironment,
   type SetEnvironmentOptions,
-} from './modules/environment/services.js';
+} from './modules/environment/services';
+
+export { RULE_CACHING_EXPIRATION_IN_SECONDS } from './modules/rate-limiter/constants';
+export {
+  assertCapacity,
+  fetchRateLimiterCount,
+  fetchRateLimiterDailyCount,
+  fetchRateLimiterHourlyCount,
+  fetchRateLimiterMonthlyCount,
+  fetchRateLimiterRule,
+  resetRateLimiterCache,
+} from './modules/rate-limiter/utils';
+export { rateLimiterMiddleware } from './modules/rate-limiter/services';
+export {
+  RateLimitException,
+  type RateLimiterRequestCount,
+  type RateLimiterRule,
+} from './modules/rate-limiter/types';
+
+export {
+  DEFAULT_REQUEST_TABLE,
+  REQUEST_LOGGER_CACHE_HEADER,
+  REQUEST_LOGGER_HEADER,
+} from './modules/request-logger/constants';
+export {
+  consoleRequestLoggerMiddleware,
+  databaseRequestLoggerMiddleware,
+} from './modules/request-logger/services';
+export {
+  resolveRequestLoggerTableName,
+  saveRequestLog,
+} from './modules/request-logger/utils';
+export type {
+  RequestLoggerArgs,
+  RequestLoggerContextLike,
+  RequestLoggerNext,
+  RequestLoggerOverride,
+  RequestLoggerResponseLike,
+} from './modules/request-logger/types';
 
 export {
   CustomLogger,
@@ -110,7 +145,7 @@ export {
   type LogContext,
   type LogEntry,
   type LogWriter,
-} from './shared/logging/services.js';
+} from './shared/logging/services';
 
 export {
   extractRequestData,
@@ -124,47 +159,9 @@ export {
   type StreamingNextCallable,
   type StreamingResponseLike,
   type UrlLike,
-} from './shared/requests/services.js';
+} from './shared/requests/services';
 
-export { RULE_CACHING_EXPIRATION_IN_SECONDS } from './modules/rate-limiter/constants.js';
-export {
-  assertCapacity,
-  fetchRateLimiterCount,
-  fetchRateLimiterDailyCount,
-  fetchRateLimiterHourlyCount,
-  fetchRateLimiterMonthlyCount,
-  fetchRateLimiterRule,
-  resetRateLimiterCache,
-} from './modules/rate-limiter/utils.js';
-export { rateLimiterMiddleware } from './modules/rate-limiter/services.js';
-export {
-  RateLimitException,
-  type RateLimiterRequestCount,
-  type RateLimiterRule,
-} from './modules/rate-limiter/types.js';
-
-export {
-  DEFAULT_REQUEST_TABLE,
-  REQUEST_LOGGER_CACHE_HEADER,
-  REQUEST_LOGGER_HEADER,
-} from './modules/request-logger/constants.js';
-export {
-  consoleRequestLoggerMiddleware,
-  databaseRequestLoggerMiddleware,
-} from './modules/request-logger/services.js';
-export {
-  resolveRequestLoggerTableName,
-  saveRequestLog,
-} from './modules/request-logger/utils.js';
-export type {
-  RequestLoggerArgs,
-  RequestLoggerContextLike,
-  RequestLoggerNext,
-  RequestLoggerOverride,
-  RequestLoggerResponseLike,
-} from './modules/request-logger/types.js';
-
-export { fetchAwsSecret, loadAwsEnv } from './shared/utils/aws/services.js';
+export { fetchAwsSecret, loadAwsEnv } from './shared/utils/aws/services';
 
 export {
   assertConformsToProtocol,
@@ -174,4 +171,4 @@ export {
   toBooleanString,
   type BooleanString,
   type ProtocolDefinition,
-} from './shared/utils/protocols.js';
+} from './shared/utils/protocols';

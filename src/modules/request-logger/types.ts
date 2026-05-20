@@ -1,5 +1,5 @@
-import type { ContextRequestLike } from '../../shared/context/services.js';
-import type { PostgresPool } from '../../shared/postgres/services.js';
+import type { ContextRequestLike } from '../../shared/context/services';
+import type { PostgresPool } from '../postgres/services';
 
 export interface RequestLoggerContextLike {
   writerPool: PostgresPool;

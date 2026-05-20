@@ -30,7 +30,8 @@ request-like object
 
 ## Dependencies
 
-- Related shared areas: [../context](../context), [../logging](../logging)
+- Related shared area: [../context](../context)
+- Logging module: [../../modules/logging](../../modules/logging)
 - Parent guide: [../../../AGENTS.md](../../../AGENTS.md)
 - Root README: [../../../README.md](../../../README.md)
 

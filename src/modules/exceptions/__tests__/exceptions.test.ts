@@ -7,7 +7,7 @@ import {
   getRequestMetadata,
   type ExceptionRequestLike,
   type ValidationErrorLike,
-} from './services.js';
+} from '../services';
 
 class TestValidationError extends Error implements ValidationErrorLike {
   private readonly validationErrors: readonly unknown[];

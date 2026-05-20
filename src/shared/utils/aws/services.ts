@@ -3,7 +3,7 @@ import {
   SecretsManagerClient,
 } from '@aws-sdk/client-secrets-manager';
 
-import { createLogger, LogLevel } from '../../logging/services.js';
+import { createLogger, LogLevel } from '../../logging/services';
 
 export interface AWSEnvironment {
   AWS_REGION: string;

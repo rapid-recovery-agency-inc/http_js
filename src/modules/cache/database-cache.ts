@@ -1,9 +1,9 @@
 import { createHash } from 'node:crypto';
 
-import type { PostgresPool } from '../../shared/postgres/services.js';
+import type { PostgresPool } from '../postgres/services';
 
-import { DEFAULT_EXPIRATION_IN_SECONDS } from './in-memory-cache.js';
-import type { AsyncCache } from './types.js';
+import { DEFAULT_EXPIRATION_IN_SECONDS } from './in-memory-cache';
+import type { AsyncCache } from './types';
 
 interface QueryablePostgresPool {
   query<TValue = unknown>(

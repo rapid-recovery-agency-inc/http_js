@@ -1,4 +1,4 @@
-import type { CacheItem } from './models.js';
+import type { CacheItem } from './models';
 
 export function isCacheItemValid<TValue>(
   cacheItem: CacheItem<TValue> | null | undefined,

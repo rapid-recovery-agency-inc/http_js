@@ -1,6 +1,6 @@
-import type { CacheItem } from './models.js';
-import { isCacheItemValid } from './utils.js';
-import type { Cache } from './types.js';
+import type { CacheItem } from './models';
+import { isCacheItemValid } from './utils';
+import type { Cache } from './types';
 
 export const DEFAULT_EXPIRATION_IN_SECONDS = 300;
 

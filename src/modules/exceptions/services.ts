@@ -1,5 +1,5 @@
-import { createLogger, LogLevel } from '../../shared/logging/services.js';
-import type { ContextRequestLike } from '../../shared/context/services.js';
+import { createLogger, LogLevel } from '../../shared/logging/services';
+import type { ContextRequestLike } from '../../shared/context/services';
 
 const logger = createLogger('exceptions', { logLevel: LogLevel.DEBUG });
 

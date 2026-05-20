@@ -1,13 +1,13 @@
-import { Context } from '../../shared/context/services.js';
-import type { ContextRequestLike } from '../../shared/context/services.js';
-import type { PostgresPool } from '../../shared/postgres/services.js';
+import { Context } from '../../../shared/context/services';
+import type { ContextRequestLike } from '../../../shared/context/services';
+import type { PostgresPool } from '../../postgres/services';
 
-import { DEFAULT_REQUEST_TABLE, REQUEST_LOGGER_HEADER } from './constants.js';
+import { DEFAULT_REQUEST_TABLE, REQUEST_LOGGER_HEADER } from '../constants';
 import {
   consoleRequestLoggerMiddleware,
   databaseRequestLoggerMiddleware,
-} from './services.js';
-import { resolveRequestLoggerTableName, saveRequestLog } from './utils.js';
+} from '../services';
+import { resolveRequestLoggerTableName, saveRequestLog } from '../utils';
 
 function createRequest(): ContextRequestLike {
   return {

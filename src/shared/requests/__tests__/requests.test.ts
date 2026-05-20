@@ -1,11 +1,11 @@
-import { resetLoggerCache } from '../logging/services.js';
+import { resetLoggerCache } from '../../logging/services';
 import {
   extractRequestData,
   validateRequestData,
   type HeadersLike,
   type QueryParamsLike,
   type RequestLike,
-} from './services.js';
+} from '../services';
 
 class TestHeaders implements HeadersLike {
   private readonly entries: Record<string, string>;

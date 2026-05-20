@@ -3,24 +3,24 @@ import { randomUUID } from 'node:crypto';
 import type {
   Context,
   ContextRequestLike,
-} from '../../shared/context/services.js';
-import { createLogger, LogLevel } from '../../shared/logging/services.js';
-import type { PostgresPool } from '../../shared/postgres/services.js';
+} from '../../shared/context/services';
+import { createLogger, LogLevel } from '../../shared/logging/services';
+import type { PostgresPool } from '../postgres/services';
 import {
   extractRequestData,
   validateRequestData,
-} from '../../shared/requests/services.js';
+} from '../../shared/requests/services';
 
 import {
   REQUEST_LOGGER_CACHE_HEADER,
   REQUEST_LOGGER_HEADER,
-} from './constants.js';
+} from './constants';
 import type {
   RequestLoggerNext,
   RequestLoggerOverride,
   RequestLoggerResponseLike,
-} from './types.js';
-import { saveRequestLog } from './utils.js';
+} from './types';
+import { saveRequestLog } from './utils';
 
 const logger = createLogger('request-logger', { logLevel: LogLevel.DEBUG });
 

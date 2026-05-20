@@ -241,6 +241,11 @@ export class EnvironmentManager<TSchema extends EnvironmentSchema> {
     }) as InferEnvironment<TSchema>;
   }
 
+  public load(raw: RawEnvironment): void {
+    validateKeys(raw, this.mandatoryKeys);
+    this.setEnvironment(raw);
+  }
+
   public setEnvironment(
     raw: RawEnvironment,
     options: SetEnvironmentOptions = {},
@@ -268,11 +273,6 @@ export class EnvironmentManager<TSchema extends EnvironmentSchema> {
     if (this.postSetHook !== undefined) {
       this.state = { ...this.postSetHook(this.env()) };
     }
-  }
-
-  public load(raw: RawEnvironment): void {
-    validateKeys(raw, this.mandatoryKeys);
-    this.setEnvironment(raw);
   }
 }
 

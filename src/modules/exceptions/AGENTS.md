@@ -31,7 +31,7 @@ error + request
 ## Dependencies
 
 - Shared Context: [../../shared/context](../../shared/context)
-- Shared Logging: [../../shared/logging](../../shared/logging)
+- Logging module: [../logging](../logging)
 - Parent guide: [../../../AGENTS.md](../../../AGENTS.md)
 - Root README: [../../../README.md](../../../README.md)
 

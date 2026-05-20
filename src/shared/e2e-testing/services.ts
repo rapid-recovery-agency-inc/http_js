@@ -3,7 +3,7 @@ import path from 'node:path';
 
 import { Pool } from 'pg';
 
-import { createLogger, LogLevel } from '../../shared/logging/services.js';
+import { createLogger, LogLevel } from '../logging/services';
 
 export interface E2ETestEnvironment {
   TEST_DATABASE_URL: string;

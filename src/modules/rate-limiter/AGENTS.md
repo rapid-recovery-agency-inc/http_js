@@ -39,9 +39,9 @@ The current implementation is library-oriented rather than framework-specific mi
 ## Dependencies
 
 - Shared Context: [../../shared/context](../../shared/context)
-- Shared Logging: [../../shared/logging](../../shared/logging)
-- Shared Postgres: [../../shared/postgres](../../shared/postgres)
 - Shared Requests: [../../shared/requests](../../shared/requests)
+- Logging module: [../logging](../logging)
+- Postgres module: [../postgres](../postgres)
 - Related module: [../request-logger](../request-logger)
 - Parent guide: [../../../AGENTS.md](../../../AGENTS.md)
 - Root README: [../../../README.md](../../../README.md)

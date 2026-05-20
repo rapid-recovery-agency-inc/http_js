@@ -1,8 +1,8 @@
-# Shared Postgres
+# Postgres Module
 
 ## Purpose
 
-This shared area provides PostgreSQL connection string builders and cached reader/writer pool factories. It is the main database infrastructure boundary used by the cache, request logger, and rate limiter modules.
+This module provides PostgreSQL connection string builders and cached reader/writer pool factories. It is a first-class library feature for managing database connectivity, used by application code as well as internally by the cache, request logger, and rate limiter modules.
 
 ## Architecture
 
@@ -17,20 +17,20 @@ Postgres environment
 
 | File                | Role                                               |
 | ------------------- | -------------------------------------------------- |
-| `../../../index.ts` | Root package export surface for this shared area   |
+| `../../../index.ts` | Root package export surface for this module        |
 | `services.ts`       | Pool creation, caching, warm-up, and cleanup logic |
-| `postgres.test.ts`  | Shared area tests                                  |
+| `postgres.test.ts`  | Module tests                                       |
 
 ## Key Responsibilities
 
 - Build writer and reader connection strings.
 - Create and cache `pg.Pool` instances.
 - Expose warm-up and cleanup helpers.
-- Keep connection management separate from feature modules.
 
 ## Dependencies
 
-- Used across: [../../modules/cache](../../modules/cache), [../../modules/request-logger](../../modules/request-logger), [../../modules/rate-limiter](../../modules/rate-limiter)
+- Depends on: [../logging](../logging)
+- Used across: [../cache](../cache), [../request-logger](../request-logger), [../rate-limiter](../rate-limiter)
 - Parent guide: [../../../AGENTS.md](../../../AGENTS.md)
 - Root README: [../../../README.md](../../../README.md)
 

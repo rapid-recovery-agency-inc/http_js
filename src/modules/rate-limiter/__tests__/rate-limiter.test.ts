@@ -1,10 +1,10 @@
-import { Context } from '../../shared/context/services.js';
-import type { ContextRequestLike } from '../../shared/context/services.js';
-import type { PostgresPool } from '../../shared/postgres/services.js';
+import { Context } from '../../../shared/context/services';
+import type { ContextRequestLike } from '../../../shared/context/services';
+import type { PostgresPool } from '../../postgres/services';
 
-import { RULE_CACHING_EXPIRATION_IN_SECONDS } from './constants.js';
-import { rateLimiterMiddleware } from './services.js';
-import { RateLimitException } from './types.js';
+import { RULE_CACHING_EXPIRATION_IN_SECONDS } from '../constants';
+import { rateLimiterMiddleware } from '../services';
+import { RateLimitException } from '../types';
 import {
   assertCapacity,
   fetchRateLimiterCount,
@@ -13,7 +13,7 @@ import {
   fetchRateLimiterMonthlyCount,
   fetchRateLimiterRule,
   resetRateLimiterCache,
-} from './utils.js';
+} from '../utils';
 
 class MockPool {
   public readonly query = jest.fn<

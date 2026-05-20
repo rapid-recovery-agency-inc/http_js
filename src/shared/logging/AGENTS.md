@@ -1,8 +1,8 @@
-# Shared Logging
+# Logging Module
 
 ## Purpose
 
-This shared area provides the package logging primitives. It exposes a cached logger factory, structured log entry types, log-level handling, and a simple console writer implementation.
+This module provides the package logging primitives. It exposes a cached logger factory, structured log entry types, log-level handling, and a simple console writer implementation. It is a first-class library feature consumed directly by application code and by other modules.
 
 ## Architecture
 
@@ -18,9 +18,9 @@ consumer
 
 | File                | Role                                                       |
 | ------------------- | ---------------------------------------------------------- |
-| `../../../index.ts` | Root package export surface for this shared area           |
+| `../../../index.ts` | Root package export surface for this module                |
 | `services.ts`       | `CustomLogger`, log-level logic, and writer implementation |
-| `logging.test.ts`   | Shared area tests                                          |
+| `logging.test.ts`   | Module tests                                               |
 
 ## Key Responsibilities
 
@@ -31,7 +31,7 @@ consumer
 
 ## Dependencies
 
-- Used across: [../../modules](../../modules), [../requests](../requests), [../postgres](../postgres)
+- Used across: [../](../), [../../shared/requests](../../shared/requests), [../../shared/utils/aws](../../shared/utils/aws)
 - Parent guide: [../../../AGENTS.md](../../../AGENTS.md)
 - Root README: [../../../README.md](../../../README.md)
 

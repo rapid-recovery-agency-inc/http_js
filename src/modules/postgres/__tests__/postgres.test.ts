@@ -25,7 +25,7 @@ import {
   resetPostgresPoolCache,
   warmUpConnectionsPools,
   type PostgresPool,
-} from './services.js';
+} from '../services';
 
 type MockedPostgresPool = PostgresPool & {
   connect: jest.Mock;

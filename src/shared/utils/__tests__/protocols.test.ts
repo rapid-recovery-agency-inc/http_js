@@ -4,7 +4,7 @@ import {
   createProtocolDefinition,
   protocolConformanceErrors,
   toBooleanString,
-} from './protocols.js';
+} from '../protocols';
 
 describe('utils protocols', () => {
   const protocol = createProtocolDefinition({

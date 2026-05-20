@@ -7,7 +7,7 @@ import {
   jsonField,
   listField,
   stringField,
-} from './services.js';
+} from '../services';
 
 describe('environment', () => {
   const schema = defineEnvironment({

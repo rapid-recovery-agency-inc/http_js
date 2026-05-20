@@ -1,5 +1,5 @@
-import { DEFAULT_EXPIRATION_IN_SECONDS } from './in-memory-cache.js';
-import type { AsyncCache } from './types.js';
+import { DEFAULT_EXPIRATION_IN_SECONDS } from './in-memory-cache';
+import type { AsyncCache } from './types';
 
 export interface AsyncRedisClient {
   delete(...keys: string[]): Promise<number>;

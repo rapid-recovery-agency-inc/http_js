@@ -4,14 +4,14 @@ import {
   HMAC_INVALID_SIGNATURE,
   HMAC_MISSING_SIGNATURE,
   HMAC_UNSUPPORTED_METHOD,
-} from './constants.js';
-import { HMACException } from './exceptions.js';
+} from './constants';
+import { HMACException } from './exceptions';
 import type {
   HMACEnvironment,
   HMACFactoryDependency,
   HMACRequestLike,
-} from './types.js';
-import { sign } from './utils.js';
+} from './types';
+import { sign } from './utils';
 
 function normalizeQueryParams(
   queryParams: HMACRequestLike['queryParams'],

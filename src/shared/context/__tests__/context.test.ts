@@ -1,11 +1,11 @@
-import type { HeadersLike, QueryParamsLike } from '../requests/services.js';
+import type { HeadersLike, QueryParamsLike } from '../../requests/services';
 import {
   Context,
   attachContextToRequest,
   buildContextDependencyFactory,
   buildContextFactory,
   type ContextRequestLike,
-} from './services.js';
+} from '../services';
 
 class TestHeaders implements HeadersLike {
   private readonly entries: Record<string, string>;

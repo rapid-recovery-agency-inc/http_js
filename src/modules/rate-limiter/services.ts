@@ -1,14 +1,14 @@
 import type {
   Context,
   ContextRequestLike,
-} from '../../shared/context/services.js';
-import { createLogger, LogLevel } from '../../shared/logging/services.js';
-import type { PostgresPool } from '../../shared/postgres/services.js';
-import { extractRequestData } from '../../shared/requests/services.js';
+} from '../../shared/context/services';
+import { createLogger, LogLevel } from '../../shared/logging/services';
+import type { PostgresPool } from '../postgres/services';
+import { extractRequestData } from '../../shared/requests/services';
 
-import { RULE_CACHING_EXPIRATION_IN_SECONDS } from './constants.js';
-import { RateLimitException } from './types.js';
-import { assertCapacity } from './utils.js';
+import { RULE_CACHING_EXPIRATION_IN_SECONDS } from './constants';
+import { RateLimitException } from './types';
+import { assertCapacity } from './utils';
 
 const logger = createLogger('rate-limiter', { logLevel: LogLevel.DEBUG });
 

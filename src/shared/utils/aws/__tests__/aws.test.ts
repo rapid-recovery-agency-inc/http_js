@@ -17,7 +17,7 @@ jest.mock('@aws-sdk/client-secrets-manager', () => {
   };
 });
 
-import { fetchAwsSecret, loadAwsEnv } from './services.js';
+import { fetchAwsSecret, loadAwsEnv } from '../services';
 
 describe('aws', () => {
   function createClient(responses: Array<{ SecretString?: string }>) {

@@ -1,19 +1,19 @@
-import { InMemoryCache } from '../cache/in-memory-cache.js';
+import { InMemoryCache } from '../cache/in-memory-cache';
 import type {
   Context,
   ContextRequestLike,
-} from '../../shared/context/services.js';
-import type { PostgresPool } from '../../shared/postgres/services.js';
-import type { ExtractedRequestData } from '../../shared/requests/services.js';
-import { DEFAULT_REQUEST_TABLE } from '../request-logger/constants.js';
-import { resolveRequestLoggerTableName } from '../request-logger/utils.js';
+} from '../../shared/context/services';
+import type { PostgresPool } from '../postgres/services';
+import type { ExtractedRequestData } from '../../shared/requests/services';
+import { DEFAULT_REQUEST_TABLE } from '../request-logger/constants';
+import { resolveRequestLoggerTableName } from '../request-logger/utils';
 
-import { RULE_CACHING_EXPIRATION_IN_SECONDS } from './constants.js';
+import { RULE_CACHING_EXPIRATION_IN_SECONDS } from './constants';
 import {
   RateLimitException,
   type RateLimiterRequestCount,
   type RateLimiterRule,
-} from './types.js';
+} from './types';
 
 const RULE_CACHE = new InMemoryCache<
   RateLimiterRule | RateLimiterRequestCount

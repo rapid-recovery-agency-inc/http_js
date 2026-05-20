@@ -5,7 +5,7 @@ import {
   resetLoggerCache,
   type LogEntry,
   type LogWriter,
-} from './services.js';
+} from '../services';
 
 class MemoryLogWriter implements LogWriter {
   public readonly entries: LogEntry[] = [];

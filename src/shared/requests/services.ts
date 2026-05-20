@@ -1,4 +1,4 @@
-import { createLogger, LogLevel } from '../logging/services.js';
+import { createLogger, LogLevel } from '../logging/services';
 
 const logger = createLogger('requests', { logLevel: LogLevel.DEBUG });
 

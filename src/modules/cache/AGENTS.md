@@ -38,7 +38,7 @@ The module is treated as a standalone capability under `src/modules` because use
 
 ## Dependencies
 
-- Shared Postgres: [../../shared/postgres](../../shared/postgres)
+- Postgres module: [../postgres](../postgres)
 - Parent guide: [../../../AGENTS.md](../../../AGENTS.md)
 - Root README: [../../../README.md](../../../README.md)
 
@@ -46,4 +46,3 @@ The module is treated as a standalone capability under `src/modules` because use
 
 - Public exports: [../../../index.ts](../../../index.ts)
 - Tests: [cache.test.ts](cache.test.ts)
-- Related shared area: [../../shared/postgres](../../shared/postgres)

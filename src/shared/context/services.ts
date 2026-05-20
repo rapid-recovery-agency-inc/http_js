@@ -1,4 +1,4 @@
-import type { RequestLike } from '../requests/services.js';
+import type { RequestLike } from '../requests/services';
 
 export interface ContextState {
   context?: unknown;
