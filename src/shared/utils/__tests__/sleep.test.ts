@@ -15,7 +15,7 @@ describe('msleep', () => {
 
     const resolved = jest.fn();
 
-    await promise.then(resolved);
+    void promise.then(resolved);
 
     expect(resolved).not.toHaveBeenCalled();
 
@@ -48,7 +48,7 @@ describe('sleep', () => {
 
     const resolved = jest.fn();
 
-    await promise.then(resolved);
+    void promise.then(resolved);
 
     expect(resolved).not.toHaveBeenCalled();
 
