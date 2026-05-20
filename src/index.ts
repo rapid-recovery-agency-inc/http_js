@@ -98,6 +98,22 @@ export {
   type SetEnvironmentOptions,
 } from './modules/environment/services';
 
+export {
+  PRISMA_RETRIES_OPTIONS_DEFAULTS,
+  PrismaRetryTimeoutError,
+  RETRYABLE_ERROR_CODES,
+  RETRYABLE_ERROR_MESSAGES,
+  calculateDelay,
+  createTimeoutPromise,
+  executeWithTimeout,
+  prismaRetryExtension,
+  shouldRetry,
+} from './modules/prisma-retry/services';
+export type {
+  PrismaRetryRuntime,
+  RetryOptions,
+} from './modules/prisma-retry/services';
+
 export { RULE_CACHING_EXPIRATION_IN_SECONDS } from './modules/rate-limiter/constants';
 export {
   assertCapacity,

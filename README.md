@@ -12,13 +12,14 @@ src/
 │   ├── environment/
 │   ├── exceptions/
 │   ├── hmac/
-│   ├── logging/
+│   ├── prisma-retry/
 │   ├── postgres/
 │   ├── rate-limiter/
 │   └── request-logger/
 └── shared/
 	├── context/
 	├── e2e-testing/
+	├── logging/
 	├── requests/
 	└── utils/
 		├── async/
@@ -43,7 +44,7 @@ src/
 - `environment`: schema-based environment loading and coercion
 - `exceptions`: request-aware exception handlers and content builders
 - `hmac`: signing and signature verification helpers
-- `logging`: structured logger factory with level filtering and log-level coercion
+- `prisma-retry`: Prisma extension factory for retrying transient query failures
 - `postgres`: pooled writer/reader connection helpers
 - `request-logger`: console and database request logging
 - `rate-limiter`: rule lookup, count queries, and middleware
@@ -51,6 +52,7 @@ src/
 ## Shared
 
 - `context`: request-scoped context factories and state attachment
+- `logging`: structured logger factory with level filtering and log-level coercion
 - `requests`: request extraction and validation
 - `utils`: protocol helpers plus nested `async` and `aws` utilities
 
