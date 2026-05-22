@@ -30,16 +30,16 @@ The design intent is:
 
 ### Feature Modules
 
-| Path                         | Role                                                       |
-| ---------------------------- | ---------------------------------------------------------- |
-| `src/modules/cache`          | Cache interfaces and cache backend implementations         |
-| `src/modules/environment`    | Schema-driven environment loading and coercion             |
-| `src/modules/exceptions`     | Request-aware exception handling and response builders     |
-| `src/modules/hmac`           | HMAC signing and signature verification                    |
-| `src/modules/prisma`         | Schema-agnostic Prisma client and identifier helpers       |
-| `src/modules/prisma-retry`   | Prisma extension factory for retrying transient failures   |
-| `src/modules/rate-limiter`   | Rule lookup, count aggregation, and rate-limit enforcement |
-| `src/modules/request-logger` | Console/database request logging helpers                   |
+| Path                         | Role                                                         |
+| ---------------------------- | ------------------------------------------------------------ |
+| `src/modules/cache`          | Cache interfaces and cache backend implementations           |
+| `src/modules/environment`    | Schema-driven environment loading and coercion               |
+| `src/modules/exceptions`     | Request-aware exception handling and response builders       |
+| `src/modules/hmac`           | HMAC signing, signature verification, and Express middleware |
+| `src/modules/prisma`         | Schema-agnostic Prisma client and identifier helpers         |
+| `src/modules/prisma-retry`   | Prisma extension factory for retrying transient failures     |
+| `src/modules/rate-limiter`   | Rule lookup, count aggregation, and rate-limit enforcement   |
+| `src/modules/request-logger` | Console/database request logging helpers                     |
 
 ### Shared Infrastructure
 

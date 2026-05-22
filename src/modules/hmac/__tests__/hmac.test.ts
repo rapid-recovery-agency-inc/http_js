@@ -1,9 +1,18 @@
+import type {
+  ExpressNextFunction,
+  ExpressRequestLike,
+  ExpressResponseLike,
+} from '../../../shared/express/services';
 import {
   HMAC_INVALID_SIGNATURE,
   HMAC_MISSING_SIGNATURE,
   HMAC_UNSUPPORTED_METHOD,
 } from '../constants';
-import { buildHmacFactoryDependency, requireHmacSignature } from '../services';
+import {
+  buildHmacFactoryDependency,
+  hmacMiddleware,
+  requireHmacSignature,
+} from '../services';
 import type { HMACRequestLike } from '../types';
 import { sign } from '../utils';
 
@@ -44,6 +53,71 @@ function createRequest(
     method: 'GET',
     queryParams: new TestQueryParams({}),
     url: 'https://api.example.com/users',
+    ...overrides,
+  };
+}
+
+class MockExpressResponse implements ExpressResponseLike {
+  public statusCode = 200;
+  public readonly headers = new Map<string, unknown>();
+  public body: unknown = undefined;
+
+  public end(body?: unknown): ExpressResponseLike {
+    if (body !== undefined) {
+      this.body = body;
+    }
+
+    return this;
+  }
+
+  public getHeader(name: string): unknown {
+    return this.headers.get(name.toLowerCase());
+  }
+
+  public getHeaders(): Record<string, unknown> {
+    return Object.fromEntries(this.headers.entries());
+  }
+
+  public json(body: unknown): ExpressResponseLike {
+    this.body = body;
+    return this;
+  }
+
+  public on(
+    _event: 'close' | 'finish',
+    _listener: () => void,
+  ): ExpressResponseLike {
+    return this;
+  }
+
+  public send(body?: unknown): ExpressResponseLike {
+    this.body = body;
+    return this;
+  }
+
+  public setHeader(
+    name: string,
+    value: number | string | readonly string[],
+  ): void {
+    this.headers.set(name.toLowerCase(), value);
+  }
+
+  public status(code: number): ExpressResponseLike {
+    this.statusCode = code;
+    return this;
+  }
+}
+
+function createExpressRequest(
+  overrides: Partial<ExpressRequestLike> = {},
+): ExpressRequestLike {
+  return {
+    body: undefined,
+    headers: {},
+    method: 'GET',
+    originalUrl: '/users',
+    path: '/users',
+    query: {},
     ...overrides,
   };
 }
@@ -183,5 +257,98 @@ describe('hmac', () => {
     ).toThrow(
       'requireHmacSignature:SECRETS must be a non-empty list in the environment',
     );
+  });
+
+  it('allows valid signatures through middleware and calls next once', async () => {
+    const middleware = hmacMiddleware(env);
+    const signature = sign('current_secret', 'http://localhost/users', {
+      page: '1',
+      tags: 'a,b',
+    });
+    const request = createExpressRequest({
+      headers: { 'X-HMAC-Signature': signature },
+      originalUrl: '/users?page=1&tags=a&tags=b',
+      query: { page: '1', tags: ['a', 'b'] },
+    });
+    const response = new MockExpressResponse();
+    const next = jest.fn<void, [unknown?]>();
+
+    await middleware(request, response, next as ExpressNextFunction);
+
+    expect(response.statusCode).toBe(200);
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(next).toHaveBeenCalledWith();
+  });
+
+  it('returns 401 from middleware when the signature is missing', async () => {
+    const middleware = hmacMiddleware(env);
+    const request = createExpressRequest();
+    const response = new MockExpressResponse();
+    const next = jest.fn<void, [unknown?]>();
+
+    await middleware(request, response, next as ExpressNextFunction);
+
+    expect(response.statusCode).toBe(401);
+    expect(response.body).toBe(HMAC_MISSING_SIGNATURE);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('returns 401 from middleware for unsupported methods', async () => {
+    const middleware = hmacMiddleware(env);
+    const request = createExpressRequest({
+      headers: { 'X-HMAC-Signature': 'abc' },
+      method: 'DELETE',
+    });
+    const response = new MockExpressResponse();
+    const next = jest.fn<void, [unknown?]>();
+
+    await middleware(request, response, next as ExpressNextFunction);
+
+    expect(response.statusCode).toBe(401);
+    expect(response.body).toBe(HMAC_UNSUPPORTED_METHOD);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('returns 401 from middleware when signature is invalid', async () => {
+    const middleware = hmacMiddleware(env);
+    const request = createExpressRequest({
+      headers: { 'X-HMAC-Signature': 'invalid' },
+    });
+    const response = new MockExpressResponse();
+    const next = jest.fn<void, [unknown?]>();
+
+    await middleware(request, response, next as ExpressNextFunction);
+
+    expect(response.statusCode).toBe(401);
+    expect(response.body).toBe(HMAC_INVALID_SIGNATURE);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('forwards unexpected middleware errors to next(error)', async () => {
+    const middleware = hmacMiddleware({
+      HMAC_HEADER_NAME: 'X-HMAC-Signature',
+      SECRETS: ['secret'],
+    });
+    const circularBody: { self?: unknown } = {};
+    circularBody.self = circularBody;
+    const signature = sign(
+      'secret',
+      'http://localhost/users',
+      null,
+      Buffer.alloc(0),
+    );
+    const request = createExpressRequest({
+      body: circularBody,
+      headers: { 'X-HMAC-Signature': signature },
+      method: 'POST',
+    });
+    const response = new MockExpressResponse();
+    const next = jest.fn<void, [unknown?]>();
+
+    await middleware(request, response, next as ExpressNextFunction);
+
+    expect(response.statusCode).toBe(200);
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(next.mock.calls[0]?.[0]).toBeInstanceOf(TypeError);
   });
 });

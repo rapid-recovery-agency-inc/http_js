@@ -7,9 +7,25 @@ Request signature generation and verification using HMAC-SHA256. Protects intern
 - Verifies that the caller knows a shared secret before processing the request — simple and lightweight.
 - Supports secret rotation: pass multiple secrets and any one match is accepted.
 - Timing-safe comparison prevents timing attacks on signature verification.
-- Framework-agnostic: works with any request object that implements `HMACRequestLike`.
+- Exposes `hmacMiddleware` for direct Express integration.
+- Framework-agnostic core verifier: works with any request object that implements `HMACRequestLike`.
 
-## Verifying a signature in middleware
+## Middleware usage
+
+```typescript
+import { hmacMiddleware } from 'http_js';
+
+app.use(
+  hmacMiddleware({
+    HMAC_HEADER_NAME: 'X-Signature',
+    SECRETS: [process.env.HMAC_SECRET!],
+  }),
+);
+```
+
+`hmacMiddleware` sends a 401 response for `HMACException` failures and forwards unexpected errors to `next(error)`.
+
+## Manual middleware implementation
 
 ```typescript
 import { requireHmacSignature, HMACException } from 'http_js';
@@ -86,6 +102,7 @@ import {
 
 | Export                       | Description                                                       |
 | ---------------------------- | ----------------------------------------------------------------- |
+| `hmacMiddleware`             | Express middleware factory that verifies request signatures       |
 | `requireHmacSignature`       | Verifies the HMAC signature on an incoming request                |
 | `buildHmacFactoryDependency` | Validates config eagerly and returns a single-arg verify function |
 | `sign`                       | Generates an HMAC-SHA256 hex signature for a request              |

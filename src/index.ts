@@ -74,6 +74,7 @@ export {
 export { HMACException } from './modules/hmac/exceptions';
 export {
   buildHmacFactoryDependency,
+  hmacMiddleware,
   requireHmacSignature,
 } from './modules/hmac/services';
 export { sign } from './modules/hmac/utils';

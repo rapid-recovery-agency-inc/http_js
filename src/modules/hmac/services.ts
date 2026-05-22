@@ -1,5 +1,11 @@
 import { timingSafeEqual } from 'node:crypto';
 
+import type {
+  ExpressMiddleware,
+  ExpressRequestLike,
+  ExpressResponseLike,
+} from '../../shared/express/services';
+
 import {
   HMAC_INVALID_SIGNATURE,
   HMAC_MISSING_SIGNATURE,
@@ -12,6 +18,85 @@ import type {
   HMACRequestLike,
 } from './types';
 import { sign } from './utils';
+
+function resolveRequestUrl(request: ExpressRequestLike): string {
+  if (request.originalUrl !== undefined && request.originalUrl.length > 0) {
+    return request.originalUrl.startsWith('http')
+      ? request.originalUrl
+      : `http://localhost${request.originalUrl}`;
+  }
+
+  if (request.path !== undefined && request.path.length > 0) {
+    return request.path.startsWith('http')
+      ? request.path
+      : `http://localhost${request.path}`;
+  }
+
+  return 'http://localhost/';
+}
+
+function createHmacRequestFromExpress(
+  request: ExpressRequestLike,
+): HMACRequestLike {
+  const query = request.query ?? {};
+
+  return {
+    async body(): Promise<Buffer> {
+      if (request.method !== 'POST') {
+        return Buffer.alloc(0);
+      }
+
+      if (typeof request.body === 'string') {
+        return Buffer.from(request.body, 'utf8');
+      }
+
+      if (request.body instanceof Buffer) {
+        return request.body;
+      }
+
+      if (request.body instanceof Uint8Array) {
+        return Buffer.from(request.body);
+      }
+
+      if (request.body instanceof ArrayBuffer) {
+        return Buffer.from(request.body);
+      }
+
+      if (request.body !== null && request.body !== undefined) {
+        return Buffer.from(JSON.stringify(request.body), 'utf8');
+      }
+
+      return Buffer.alloc(0);
+    },
+    headers: {
+      get(key: string, defaultValue?: string | null): string | null {
+        const expectedKey = key.toLowerCase();
+        const entry = Object.entries(request.headers).find(
+          ([headerKey]) => headerKey.toLowerCase() === expectedKey,
+        );
+        const value = entry?.[1];
+
+        if (value === undefined) {
+          return defaultValue ?? null;
+        }
+
+        if (Array.isArray(value)) {
+          return value.join(',');
+        }
+
+        return String(value);
+      },
+    },
+    method: request.method,
+    queryParams: new Map<string, string>(
+      Object.entries(query).map(([key, value]) => [
+        key,
+        Array.isArray(value) ? value.join(',') : String(value ?? ''),
+      ]),
+    ),
+    url: resolveRequestUrl(request),
+  };
+}
 
 function normalizeQueryParams(
   queryParams: HMACRequestLike['queryParams'],
@@ -74,5 +159,29 @@ export function buildHmacFactoryDependency(
 
   return async (request: HMACRequestLike): Promise<void> => {
     await requireHmacSignature(request, env);
+  };
+}
+
+export function hmacMiddleware(env: HMACEnvironment): ExpressMiddleware {
+  const verifyHmacSignature = buildHmacFactoryDependency(env);
+
+  return async (
+    request: ExpressRequestLike,
+    response: ExpressResponseLike,
+    next,
+  ): Promise<void> => {
+    try {
+      await verifyHmacSignature(createHmacRequestFromExpress(request));
+    } catch (error) {
+      if (error instanceof HMACException) {
+        response.status(error.statusCode).send(error.detail);
+        return;
+      }
+
+      next(error);
+      return;
+    }
+
+    next();
   };
 }
