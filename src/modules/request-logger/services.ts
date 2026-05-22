@@ -4,8 +4,18 @@ import type {
   Context,
   ContextRequestLike,
 } from '../../shared/context/services';
+import type {
+  ExpressMiddleware,
+  ExpressRequestLike,
+  ExpressResponseLike,
+} from '../../shared/express/services';
+import {
+  createContextRequestFromExpress,
+  hasExpressHeader,
+  normalizeExpressHeaders,
+  stringifyExpressBody,
+} from '../../shared/express/services';
 import { createLogger, LogLevel } from '../../shared/logging/services';
-import type { PostgresPool } from '../postgres/services';
 import {
   extractRequestData,
   validateRequestData,
@@ -16,9 +26,8 @@ import {
   REQUEST_LOGGER_HEADER,
 } from './constants';
 import type {
-  RequestLoggerNext,
   RequestLoggerOverride,
-  RequestLoggerResponseLike,
+  RequestLoggerPersistenceLike,
 } from './types';
 import { saveRequestLog } from './utils';
 
@@ -52,119 +61,169 @@ function applyOverride(
   };
 }
 
-export async function consoleRequestLoggerMiddleware(
-  pathWhitelist: string[],
-  request: ContextRequestLike,
-  callNext: RequestLoggerNext,
-): Promise<RequestLoggerResponseLike> {
-  if (pathWhitelist.includes(request.url.path)) {
-    return callNext(request);
-  }
+function createSingleExecutionCallback<TArgs extends unknown[]>(
+  callback: (...args: TArgs) => void,
+): (...args: TArgs) => void {
+  let hasRun = false;
 
-  const startedAt = Date.now();
-  const response = await callNext(request);
-  const durationMs = Date.now() - startedAt;
+  return (...args: TArgs): void => {
+    if (hasRun) {
+      return;
+    }
 
-  logger.info(`${request.method} ${request.url.path}`, {
-    durationMs,
-    statusCode: response.statusCode,
-  });
-
-  return response;
+    hasRun = true;
+    callback(...args);
+  };
 }
 
-export async function databaseRequestLoggerMiddleware(
+function attachResponseBodyTracker(
+  response: ExpressResponseLike,
+): () => string | null {
+  let responseBody: string | null = null;
+
+  const mutableResponse = response as ExpressResponseLike & {
+    end(body?: unknown): ExpressResponseLike;
+    json(body: unknown): ExpressResponseLike;
+    send(body?: unknown): ExpressResponseLike;
+  };
+  const originalSend = mutableResponse.send.bind(mutableResponse);
+  const originalJson = mutableResponse.json.bind(mutableResponse);
+  const originalEnd = mutableResponse.end.bind(mutableResponse);
+
+  mutableResponse.send = (body?: unknown): ExpressResponseLike => {
+    if (body !== undefined) {
+      responseBody = stringifyExpressBody(body);
+    }
+
+    return originalSend(body);
+  };
+  mutableResponse.json = (body: unknown): ExpressResponseLike => {
+    responseBody = stringifyExpressBody(body);
+    return originalJson(body);
+  };
+  mutableResponse.end = (body?: unknown): ExpressResponseLike => {
+    if (body !== undefined) {
+      responseBody = stringifyExpressBody(body);
+    }
+
+    return originalEnd(body);
+  };
+
+  return (): string | null => responseBody;
+}
+
+export function consoleRequestLoggerMiddleware(
   pathWhitelist: string[],
-  request: ContextRequestLike,
-  callNext: RequestLoggerNext,
+): ExpressMiddleware {
+  return (
+    request: ExpressRequestLike,
+    response: ExpressResponseLike,
+    next,
+  ): void => {
+    const contextRequest = createContextRequestFromExpress(request);
+
+    if (pathWhitelist.includes(contextRequest.url.path)) {
+      next();
+      return;
+    }
+
+    const startedAt = Date.now();
+
+    response.on('finish', () => {
+      const durationMs = Date.now() - startedAt;
+
+      logger.info(`${contextRequest.method} ${contextRequest.url.path}`, {
+        durationMs,
+        statusCode: response.statusCode,
+      });
+    });
+
+    next();
+  };
+}
+
+export function databaseRequestLoggerMiddleware(
+  pathWhitelist: string[],
   createServiceContext: (
     request: ContextRequestLike,
-  ) => Context<unknown, PostgresPool, PostgresPool, ContextRequestLike>,
+  ) => Context<
+    unknown,
+    RequestLoggerPersistenceLike,
+    RequestLoggerPersistenceLike,
+    ContextRequestLike
+  >,
   override: RequestLoggerOverride | null = null,
   tablePrefix: string | null = null,
-): Promise<RequestLoggerResponseLike> {
-  if (pathWhitelist.includes(request.url.path)) {
-    return callNext(request);
-  }
+): ExpressMiddleware {
+  return async (
+    request: ExpressRequestLike,
+    response: ExpressResponseLike,
+    next,
+  ): Promise<void> => {
+    const contextRequest = createContextRequestFromExpress(request);
 
-  const requestUuid = randomUUID();
-  request.state ??= {};
-  request.state.requestUuid = requestUuid;
+    if (pathWhitelist.includes(contextRequest.url.path)) {
+      next();
+      return;
+    }
 
-  const ctx = createServiceContext(request);
-  const requestData = applyOverride(
-    await extractRequestData(request),
-    override,
-  );
+    const requestUuid = randomUUID();
+    contextRequest.state.requestUuid = requestUuid;
 
-  try {
-    validateRequestData(requestData);
-  } catch (error) {
-    logger.error(`databaseRequestLoggerMiddleware: ${String(error)}`);
-    return {
-      statusCode: 400,
-      headers: {},
-      body: JSON.stringify({ error: String(error) }),
-    };
-  }
+    let requestData;
+    try {
+      requestData = applyOverride(
+        await extractRequestData(contextRequest),
+        override,
+      );
+      validateRequestData(requestData);
+    } catch (error) {
+      logger.error(`databaseRequestLoggerMiddleware: ${String(error)}`);
+      response.status(400).json({ error: String(error) });
+      return;
+    }
 
-  const startedAt = Date.now();
+    const ctx = createServiceContext(contextRequest);
+    const startedAt = Date.now();
+    const getResponseBody = attachResponseBodyTracker(response);
+    const finalizeLog = createSingleExecutionCallback(
+      (responseWasFinished: boolean): void => {
+        const durationMs = Date.now() - startedAt;
+        const responseHeaders = responseWasFinished
+          ? JSON.stringify(normalizeExpressHeaders(response.getHeaders()))
+          : null;
+        const responseBody = responseWasFinished ? getResponseBody() : null;
 
-  try {
-    const response = await callNext(request);
-    const durationMs = Date.now() - startedAt;
-    const headers = {
-      ...response.headers,
-      [REQUEST_LOGGER_HEADER]: requestUuid,
-    };
-
-    await saveRequestLog(
-      {
-        ctx,
-        path: requestData.path,
-        fromCache: REQUEST_LOGGER_CACHE_HEADER in response.headers,
-        productName: requestData.productName,
-        productModule: requestData.productModule,
-        productFeature: requestData.productFeature,
-        productTenant: requestData.productTenant,
-        requestHeaders: requestData.requestHeaders,
-        requestBody: requestData.requestBody,
-        responseHeaders: JSON.stringify(headers),
-        responseBody: response.body ?? '',
-        statusCode: response.statusCode,
-        durationMs,
-        requestUuid,
+        void saveRequestLog(
+          {
+            ctx,
+            path: requestData.path,
+            fromCache: hasExpressHeader(response, REQUEST_LOGGER_CACHE_HEADER),
+            productName: requestData.productName,
+            productModule: requestData.productModule,
+            productFeature: requestData.productFeature,
+            productTenant: requestData.productTenant,
+            requestHeaders: requestData.requestHeaders,
+            requestBody: requestData.requestBody,
+            responseHeaders,
+            responseBody,
+            statusCode: response.statusCode,
+            durationMs,
+            requestUuid,
+          },
+          tablePrefix,
+        );
       },
-      tablePrefix,
     );
 
-    return {
-      ...response,
-      headers,
-    };
-  } catch (error) {
-    const durationMs = Date.now() - startedAt;
+    response.on('finish', () => {
+      finalizeLog(true);
+    });
+    response.on('close', () => {
+      finalizeLog(false);
+    });
+    response.setHeader(REQUEST_LOGGER_HEADER, requestUuid);
 
-    await saveRequestLog(
-      {
-        ctx,
-        path: requestData.path,
-        fromCache: false,
-        productName: requestData.productName,
-        productModule: requestData.productModule,
-        productFeature: requestData.productFeature,
-        productTenant: requestData.productTenant,
-        requestHeaders: requestData.requestHeaders,
-        requestBody: requestData.requestBody,
-        responseHeaders: null,
-        responseBody: null,
-        statusCode: 500,
-        durationMs,
-        requestUuid,
-      },
-      tablePrefix,
-    );
-
-    throw error;
-  }
+    next();
+  };
 }

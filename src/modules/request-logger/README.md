@@ -1,39 +1,39 @@
 # Request Logger
 
-Middleware for logging HTTP request and response metadata — either to the console or to a PostgreSQL table. Other modules (e.g. rate-limiter) query this table to aggregate request counts.
+Middleware for logging HTTP request and response metadata — either to the console or through an injected repository. The default Prisma repository stays schema-agnostic and keeps SQL out of the middleware layer.
 
 ## Why use it
 
 - Provides a consistent audit trail of every inbound request including path, product metadata, headers, body, status code, and duration.
 - Console variant is lightweight and needs no database — useful in development or low-volume services.
-- Database variant persists structured rows that the rate-limiter queries for count aggregation.
-- A per-request UUID is attached to `request.state` so downstream handlers can correlate logs.
+- Repository-backed variant persists structured rows that the rate-limiter can later query for count aggregation.
+- A per-request UUID is attached to `request.state` and emitted as a response header so downstream handlers can correlate logs.
 
 ## Console logger middleware
 
 ```typescript
 import { consoleRequestLoggerMiddleware } from 'http_js';
 
-const response = await consoleRequestLoggerMiddleware(
-  ['/health'], // path whitelist — not logged
-  request,
-  callNext,
+app.use(
+  consoleRequestLoggerMiddleware(
+    ['/health'], // path whitelist — not logged
+  ),
 );
 // Emits: INFO  POST /api/users  { durationMs: 42, statusCode: 201 }
 ```
 
-## Database logger middleware
+## Repository-backed logger middleware
 
 ```typescript
 import { databaseRequestLoggerMiddleware } from 'http_js';
 
-const response = await databaseRequestLoggerMiddleware(
-  ['/health'],
-  request,
-  callNext,
-  createServiceContext, // factory returning a Context with a writer pool
-  null, // optional RequestLoggerOverride
-  'myapp', // optional table prefix  → myapp_request_log
+app.use(
+  databaseRequestLoggerMiddleware(
+    ['/health'],
+    createServiceContext, // factory returning a Context with a writer repository
+    null, // optional RequestLoggerOverride
+    'myapp', // optional table prefix  → myapp_request_log
+  ),
 );
 ```
 
@@ -85,7 +85,27 @@ const table = resolveRequestLoggerTableName(DEFAULT_REQUEST_TABLE, 'myapp');
 // 'myapp_request_log'
 ```
 
-## Database schema
+## Prisma repository
+
+```typescript
+import { Prisma, PrismaClient } from '@prisma/client';
+import { PrismaRequestLoggerRepository } from 'http_js';
+
+const prisma = new PrismaClient({
+  datasources: { db: { url: process.env.DATABASE_URL! } },
+});
+
+const repository = new PrismaRequestLoggerRepository({
+  client: prisma,
+  sql: {
+    sql: Prisma.sql,
+    raw: Prisma.raw,
+  },
+  schemaName: 'public',
+});
+```
+
+## Example schema
 
 ```sql
 CREATE TABLE request_log (
@@ -111,15 +131,15 @@ CREATE TABLE request_log (
 
 | Export                            | Description                                      |
 | --------------------------------- | ------------------------------------------------ |
-| `consoleRequestLoggerMiddleware`  | Logs request + duration to the console           |
-| `databaseRequestLoggerMiddleware` | Persists request metadata to PostgreSQL          |
-| `saveRequestLog`                  | Inserts a single request log row                 |
+| `consoleRequestLoggerMiddleware`  | Express middleware factory for console logging   |
+| `databaseRequestLoggerMiddleware` | Express middleware factory for persisted logging |
+| `saveRequestLog`                  | Delegates a single request log row to a writer   |
+| `PrismaRequestLoggerRepository`   | Default schema-agnostic Prisma repository        |
 | `resolveRequestLoggerTableName`   | Builds the table name with optional prefix       |
 | `DEFAULT_REQUEST_TABLE`           | Default table name: `'request_log'`              |
 | `REQUEST_LOGGER_HEADER`           | Header name used to pass a logger hint           |
 | `REQUEST_LOGGER_CACHE_HEADER`     | Header name used to indicate a cache hit         |
 | `RequestLoggerArgs`               | Argument shape for `saveRequestLog`              |
+| `RequestLogRecord`                | Persistence payload shape for repositories       |
 | `RequestLoggerOverride`           | Fields that can be overridden before persistence |
-| `RequestLoggerNext`               | Type for the downstream `callNext` handler       |
 | `RequestLoggerContextLike`        | Minimal context shape required by this module    |
-| `RequestLoggerResponseLike`       | Response shape expected from `callNext`          |

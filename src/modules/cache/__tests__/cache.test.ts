@@ -3,14 +3,34 @@ import {
   DEFAULT_EXPIRATION_IN_SECONDS,
   InMemoryCache,
 } from '../in-memory-cache';
+import { PrismaCacheRepository } from '../repositories';
 import { RedisCache } from '../redis-cache';
 import { isCacheItemValid } from '../utils';
 
-class MockQueryPool {
-  public readonly query = jest.fn<
-    Promise<{ rowCount: number | null; rows: unknown[] }>,
-    [string, unknown[]?]
-  >();
+class MockPrismaClient {
+  public readonly executeRawMock = jest.fn<Promise<number>, [string]>();
+  public readonly queryRawMock = jest.fn<Promise<unknown[]>, [string]>();
+
+  public async $executeRaw(statement: string): Promise<number> {
+    return this.executeRawMock(statement);
+  }
+
+  public async $queryRaw<TResult>(statement: string): Promise<TResult> {
+    return (await this.queryRawMock(statement)) as TResult;
+  }
+}
+
+class MockSqlFactory {
+  public raw(value: string): string {
+    return value;
+  }
+
+  public sql(strings: TemplateStringsArray, ...values: unknown[]): string {
+    return strings.reduce((output, segment, index) => {
+      const value = values[index];
+      return `${output}${segment}${stringifySqlValue(value)}`;
+    }, '');
+  }
 }
 
 class MockRedisClient {
@@ -29,6 +49,27 @@ class MockRedisClient {
   }));
   public readonly set = jest.fn(async () => 'OK');
   public readonly setex = jest.fn(async () => 'OK');
+}
+
+class MockCacheRepository {
+  public readonly cleanupExpired = jest.fn(async () => 0);
+  public readonly clear = jest.fn(async () => undefined);
+  public readonly exists = jest.fn(async () => false);
+  public readonly find = jest.fn(
+    async () => null as { expiresAt: number | null; value: string } | null,
+  );
+  public readonly remove = jest.fn(async () => undefined);
+  public readonly upsert = jest.fn(async () => undefined);
+}
+
+function stringifySqlValue(value: unknown): string {
+  if (value === undefined) {
+    return '';
+  }
+  if (Buffer.isBuffer(value)) {
+    return '<buffer>';
+  }
+  return String(value);
 }
 
 describe('cache', () => {
@@ -114,72 +155,102 @@ describe('cache', () => {
     expect(isCacheItemValid(null)).toBe(false);
   });
 
-  it('stores and loads database cache entries via the configured pool', async () => {
-    const pool = new MockQueryPool();
-    const cache = new DatabaseCache<{ name: string }>(pool as never);
+  it('delegates database cache behavior to an injected repository', async () => {
+    const repository = new MockCacheRepository();
+    const cache = new DatabaseCache<{ name: string }>(repository);
 
-    pool.query
-      .mockResolvedValueOnce({ rowCount: 1, rows: [] })
-      .mockResolvedValueOnce({
-        rowCount: 1,
-        rows: [
-          {
-            value: '{"name":"Alice"}',
-            expires_at: Math.floor(Date.now() / 1000) + 60,
-          },
-        ],
-      });
+    repository.find.mockResolvedValueOnce({
+      value: '{"name":"Alice"}',
+      expiresAt: Math.floor(Date.now() / 1000) + 60,
+    });
+    repository.exists.mockResolvedValueOnce(true);
+    repository.cleanupExpired.mockResolvedValueOnce(3);
 
     await cache.set('user:1', { name: 'Alice' }, 60);
-    const value = await cache.get('user:1');
+    await expect(cache.get('user:1')).resolves.toEqual({ name: 'Alice' });
+    await expect(cache.exists('user:1')).resolves.toBe(true);
+    await cache.removeItem('user:1');
+    await cache.clear();
+    await expect(cache.cleanupExpired()).resolves.toBe(3);
 
-    expect(pool.query).toHaveBeenCalledTimes(2);
-    expect(value).toEqual({ name: 'Alice' });
+    expect(repository.upsert).toHaveBeenCalledWith(
+      'user:1',
+      { name: 'Alice' },
+      60,
+    );
+    expect(repository.remove).toHaveBeenCalledWith('user:1');
+    expect(repository.clear).toHaveBeenCalledTimes(1);
   });
 
   it('removes expired database cache items on read', async () => {
-    const pool = new MockQueryPool();
-    const cache = new DatabaseCache(pool as never);
+    const repository = new MockCacheRepository();
+    const cache = new DatabaseCache(repository);
 
-    pool.query
-      .mockResolvedValueOnce({
-        rowCount: 1,
-        rows: [
-          {
-            value: '{"name":"Alice"}',
-            expires_at: Math.floor(Date.now() / 1000) - 1,
-          },
-        ],
-      })
-      .mockResolvedValueOnce({ rowCount: 1, rows: [] });
+    repository.find.mockResolvedValueOnce({
+      value: '{"name":"Alice"}',
+      expiresAt: Math.floor(Date.now() / 1000) - 1,
+    });
 
     await expect(cache.get('user:1')).resolves.toBeNull();
-    expect(pool.query).toHaveBeenCalledTimes(2);
-    expect(pool.query.mock.calls[1]?.[0]).toContain('DELETE FROM public.cache');
+    expect(repository.remove).toHaveBeenCalledWith('user:1');
   });
 
-  it('checks existence and clears database cache entries', async () => {
-    const pool = new MockQueryPool();
-    const cache = new DatabaseCache(pool as never, 'cache_table');
+  it('uses prisma raw-query adapters with runtime table names', async () => {
+    const client = new MockPrismaClient();
+    const repository = new PrismaCacheRepository({
+      client,
+      sql: new MockSqlFactory(),
+      tableName: 'cache_table',
+    });
+    const cache = new DatabaseCache<{ name: string }>({
+      client,
+      sql: new MockSqlFactory(),
+      tableName: 'cache_table',
+    });
 
-    pool.query
-      .mockResolvedValueOnce({ rowCount: 1, rows: [{ '?column?': 1 }] })
-      .mockResolvedValueOnce({ rowCount: 0, rows: [] })
-      .mockResolvedValueOnce({ rowCount: 3, rows: [] });
+    client.executeRawMock
+      .mockResolvedValueOnce(1)
+      .mockResolvedValueOnce(1)
+      .mockResolvedValueOnce(0)
+      .mockResolvedValueOnce(3);
+    client.queryRawMock
+      .mockResolvedValueOnce([
+        {
+          value: '{"name":"Alice"}',
+          expires_at: Math.floor(Date.now() / 1000) + 60,
+        },
+      ])
+      .mockResolvedValueOnce([{ present: 1 }]);
 
-    await expect(cache.exists('user:1')).resolves.toBe(true);
-    await cache.clear();
-    await expect(cache.cleanupExpired()).resolves.toBe(3);
+    await cache.set('user:1', { name: 'Alice' }, 60);
+    await expect(cache.get('user:1')).resolves.toEqual({ name: 'Alice' });
+    await expect(repository.exists('user:1')).resolves.toBe(true);
+    await repository.remove('user:1');
+    await repository.clear();
+    await expect(repository.cleanupExpired()).resolves.toBe(3);
+
+    expect(client.executeRawMock.mock.calls[0]?.[0]).toContain(
+      'INSERT INTO public.cache_table',
+    );
+    expect(client.queryRawMock.mock.calls[0]?.[0]).toContain(
+      'SELECT value, expires_at',
+    );
   });
 
   it('rejects invalid database cache inputs', async () => {
-    const pool = new MockQueryPool();
+    const repository = new MockCacheRepository();
+    const client = new MockPrismaClient();
 
-    expect(() => new DatabaseCache(pool as never, 'bad-table-name!')).toThrow(
-      "DatabaseCache: invalid table name 'bad-table-name!'",
-    );
+    expect(
+      () =>
+        new PrismaCacheRepository({
+          client,
+          sql: new MockSqlFactory(),
+          tableName: 'bad-table-name!',
+        }),
+    ).toThrow("Prisma: invalid table name 'bad-table-name!'");
 
-    const cache = new DatabaseCache(pool as never);
+    const cache = new DatabaseCache(repository);
 
     await expect(cache.set('user:1', null as never)).rejects.toThrow(
       'DatabaseCache: value cannot be null or undefined',

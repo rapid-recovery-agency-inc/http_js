@@ -1,10 +1,10 @@
 # Context
 
-Request-scoped context factory that binds environment configuration, writer resources, and reader resources to a single request. Used internally by the rate-limiter, request-logger, and exceptions modules to access database pools and config without threading them through every function call.
+Request-scoped context factory that binds environment configuration, writer resources, and reader resources to a single request. Used internally by the rate-limiter, request-logger, and exceptions modules to access repositories or Prisma clients without threading them through every function call.
 
 ## Why use it
 
-- Keeps resource access consistent across modules — each module calls `ctx.writer` or `ctx.reader` rather than managing its own pool references.
+- Keeps resource access consistent across modules — each module calls `ctx.writer` or `ctx.reader` rather than managing its own repository or client references.
 - Reader selection is pluggable: the default picks a random replica; supply `selectReader` to customise (e.g. round-robin or affinity).
 - Context enhancers allow middleware to augment the context with extra state (e.g. authenticated user) before handing it to downstream handlers.
 - `attachContextToRequest` stores the context on `request.state` so it can be retrieved later without re-building it.
@@ -18,22 +18,37 @@ import {
   type ContextOptions,
 } from 'http_js';
 import {
-  getAsyncWriterConnectionPool,
-  getRandomReaderConnectionPool,
+  PrismaRequestLoggerRepository,
+  PrismaRateLimiterRepository,
 } from 'http_js';
 
-const options: ContextOptions<AppEnv, PostgresPool, PostgresPool, AppRequest> =
-  {
-    getWriterResource: (env) => getAsyncWriterConnectionPool(env),
-    getReaderResources: (env) => getAsyncReadersConnectionPools(env),
-  };
+const options: ContextOptions<
+  AppEnv,
+  PrismaRequestLoggerRepository<Prisma.Sql>,
+  PrismaRateLimiterRepository<Prisma.Sql>,
+  AppRequest
+> = {
+  getWriterResource: (env) =>
+    new PrismaRequestLoggerRepository({
+      client: env.writerPrisma,
+      sql: env.prismaSql,
+    }),
+  getReaderResources: (env) =>
+    env.readerPrisma.map(
+      (client) =>
+        new PrismaRateLimiterRepository({
+          client,
+          sql: env.prismaSql,
+        }),
+    ),
+};
 
 const createContext = buildContextFactory(appEnv, options);
 
 // In a request handler:
 const ctx = createContext(request);
-await ctx.writer.query('INSERT INTO ...', []);
-const row = await ctx.reader.query('SELECT ...', []);
+await ctx.writer.save({ path: '/events', fromCache: false });
+const rule = await ctx.reader.fetchRule(requestData);
 ```
 
 ## Using context enhancers
@@ -45,8 +60,8 @@ import type { ContextEnhancer } from 'http_js';
 
 const addUser: ContextEnhancer<
   AppEnv,
-  PostgresPool,
-  PostgresPool,
+  RequestLoggerPersistenceLike,
+  RateLimiterRepositoryLike,
   AppRequest
 > = (request, context) => {
   request.state ??= {};

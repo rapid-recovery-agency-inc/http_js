@@ -1,33 +1,10 @@
-import { createHash } from 'node:crypto';
-
-import type { PostgresPool } from '../postgres/services';
-
 import { DEFAULT_EXPIRATION_IN_SECONDS } from './in-memory-cache';
+import {
+  PrismaCacheRepository,
+  type CacheRepository,
+  type PrismaCacheRepositoryOptions,
+} from './repositories';
 import type { AsyncCache } from './types';
-
-interface QueryablePostgresPool {
-  query<TValue = unknown>(
-    text: string,
-    values?: unknown[],
-  ): Promise<{ rowCount: number | null; rows: TValue[] }>;
-}
-
-interface CacheRow {
-  expires_at: number | null;
-  value: string;
-}
-
-function hashKey(key: string): Buffer {
-  return createHash('sha256').update(key, 'utf8').digest();
-}
-
-function normalizeTableName(tableName: string): string {
-  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/u.test(tableName)) {
-    throw new Error(`DatabaseCache: invalid table name '${tableName}'`);
-  }
-
-  return tableName;
-}
 
 function parseCachedValue(rawValue: string): unknown {
   try {
@@ -38,32 +15,24 @@ function parseCachedValue(rawValue: string): unknown {
 }
 
 export class DatabaseCache<TValue = unknown> implements AsyncCache<TValue> {
-  private readonly pool: QueryablePostgresPool;
-  private readonly tableName: string;
+  private readonly repository: CacheRepository<TValue>;
 
-  public constructor(pool: PostgresPool, tableName = 'cache') {
-    this.pool = pool as unknown as QueryablePostgresPool;
-    this.tableName = normalizeTableName(tableName);
+  public constructor(
+    dependency: CacheRepository<TValue> | PrismaCacheRepositoryOptions<unknown>,
+  ) {
+    this.repository = isCacheRepository<TValue>(dependency)
+      ? dependency
+      : new PrismaCacheRepository<TValue, unknown>(dependency);
   }
 
   public async get(key: string): Promise<TValue | null> {
     const nowInSeconds = Math.floor(Date.now() / 1000);
-    const result = await this.pool.query<CacheRow>(
-      `
-        SELECT value, expires_at
-        FROM public.${this.tableName}
-        WHERE key = $1
-        LIMIT 1
-      `,
-      [hashKey(key)],
-    );
-
-    const row = result.rows[0];
-    if (row === undefined) {
+    const row = await this.repository.find(key);
+    if (row === null) {
       return null;
     }
 
-    if (row.expires_at !== null && nowInSeconds >= row.expires_at) {
+    if (row.expiresAt !== null && nowInSeconds >= row.expiresAt) {
       await this.removeItem(key);
       return null;
     }
@@ -80,64 +49,45 @@ export class DatabaseCache<TValue = unknown> implements AsyncCache<TValue> {
       throw new Error('DatabaseCache: value cannot be null or undefined');
     }
 
-    const nowInSeconds = Math.floor(Date.now() / 1000);
-    const expiresAt = nowInSeconds + expirationInSeconds;
-    const serializedValue =
-      typeof value === 'string' ? value : JSON.stringify(value);
-
-    await this.pool.query(
-      `
-        INSERT INTO public.${this.tableName} (key, plain_key, value, expires_at)
-        VALUES ($1, $2, $3, $4)
-        ON CONFLICT (key) DO UPDATE SET
-          value = EXCLUDED.value,
-          expires_at = EXCLUDED.expires_at,
-          updated_at = CURRENT_TIMESTAMP
-      `,
-      [hashKey(key), key, serializedValue, expiresAt],
-    );
+    await this.repository.upsert(key, value, expirationInSeconds);
   }
 
   public async removeItem(key: string): Promise<void> {
-    await this.pool.query(
-      `
-        DELETE FROM public.${this.tableName}
-        WHERE key = $1
-      `,
-      [hashKey(key)],
-    );
+    await this.repository.remove(key);
   }
 
   public async exists(key: string): Promise<boolean> {
-    const nowInSeconds = Math.floor(Date.now() / 1000);
-    const result = await this.pool.query(
-      `
-        SELECT 1
-        FROM public.${this.tableName}
-        WHERE key = $1
-          AND (expires_at IS NULL OR expires_at > $2)
-        LIMIT 1
-      `,
-      [hashKey(key), nowInSeconds],
-    );
-
-    return (result.rowCount ?? 0) > 0;
+    return this.repository.exists(key);
   }
 
   public async clear(): Promise<void> {
-    await this.pool.query(`TRUNCATE TABLE public.${this.tableName}`);
+    await this.repository.clear();
   }
 
   public async cleanupExpired(): Promise<number> {
-    const nowInSeconds = Math.floor(Date.now() / 1000);
-    const result = await this.pool.query(
-      `
-        DELETE FROM public.${this.tableName}
-        WHERE expires_at IS NOT NULL AND expires_at <= $1
-      `,
-      [nowInSeconds],
-    );
-
-    return result.rowCount ?? 0;
+    return this.repository.cleanupExpired();
   }
+}
+
+function isCacheRepository<TValue>(
+  dependency: unknown,
+): dependency is CacheRepository<TValue> {
+  if (typeof dependency !== 'object' || dependency === null) {
+    return false;
+  }
+
+  return (
+    'cleanupExpired' in dependency &&
+    typeof dependency.cleanupExpired === 'function' &&
+    'clear' in dependency &&
+    typeof dependency.clear === 'function' &&
+    'exists' in dependency &&
+    typeof dependency.exists === 'function' &&
+    'find' in dependency &&
+    typeof dependency.find === 'function' &&
+    'remove' in dependency &&
+    typeof dependency.remove === 'function' &&
+    'upsert' in dependency &&
+    typeof dependency.upsert === 'function'
+  );
 }

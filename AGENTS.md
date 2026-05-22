@@ -36,8 +36,8 @@ The design intent is:
 | `src/modules/environment`    | Schema-driven environment loading and coercion             |
 | `src/modules/exceptions`     | Request-aware exception handling and response builders     |
 | `src/modules/hmac`           | HMAC signing and signature verification                    |
+| `src/modules/prisma`         | Schema-agnostic Prisma client and identifier helpers       |
 | `src/modules/prisma-retry`   | Prisma extension factory for retrying transient failures   |
-| `src/modules/postgres`       | Writer/reader pool helpers and connection string utilities |
 | `src/modules/rate-limiter`   | Rule lookup, count aggregation, and rate-limit enforcement |
 | `src/modules/request-logger` | Console/database request logging helpers                   |
 
@@ -47,6 +47,7 @@ The design intent is:
 | ------------------------ | ------------------------------------------------- |
 | `src/shared/context`     | Request-scoped context creation and attachment    |
 | `src/shared/e2e-testing` | Isolated PostgreSQL test harness utilities        |
+| `src/shared/express`     | Express-compatible request and response adapters  |
 | `src/shared/logging`     | Structured logger factory with level filtering    |
 | `src/shared/requests`    | Request extraction and request validation helpers |
 | `src/shared/utils`       | Protocol helpers and supporting utility areas     |
@@ -62,11 +63,12 @@ The design intent is:
 - Environment: [src/modules/environment](src/modules/environment)
 - Exceptions: [src/modules/exceptions](src/modules/exceptions)
 - HMAC: [src/modules/hmac](src/modules/hmac)
+- Prisma: [src/modules/prisma](src/modules/prisma)
 - Prisma retry: [src/modules/prisma-retry](src/modules/prisma-retry)
-- Postgres: [src/modules/postgres](src/modules/postgres)
 - Rate limiter: [src/modules/rate-limiter](src/modules/rate-limiter)
 - Request logger: [src/modules/request-logger](src/modules/request-logger)
 - Context: [src/shared/context](src/shared/context)
+- Express: [src/shared/express](src/shared/express)
 - Logging: [src/shared/logging](src/shared/logging)
 - Requests: [src/shared/requests](src/shared/requests)
 - Shared utils: [src/shared/utils](src/shared/utils)

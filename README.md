@@ -12,13 +12,14 @@ src/
 │   ├── environment/
 │   ├── exceptions/
 │   ├── hmac/
+│   ├── prisma/
 │   ├── prisma-retry/
-│   ├── postgres/
 │   ├── rate-limiter/
 │   └── request-logger/
 └── shared/
 	├── context/
 	├── e2e-testing/
+	├── express/
 	├── logging/
 	├── requests/
 	└── utils/
@@ -40,18 +41,19 @@ src/
 
 ## Modules
 
-- `cache`: in-memory, database, and Redis cache implementations
+- `cache`: in-memory, repository-backed SQL, and Redis cache implementations
 - `environment`: schema-based environment loading and coercion
 - `exceptions`: request-aware exception handlers and content builders
 - `hmac`: signing and signature verification helpers
+- `prisma`: schema-agnostic Prisma client and identifier helpers
 - `prisma-retry`: Prisma extension factory for retrying transient query failures
-- `postgres`: pooled writer/reader connection helpers
-- `request-logger`: console and database request logging
-- `rate-limiter`: rule lookup, count queries, and middleware
+- `request-logger`: console and repository-backed request logging
+- `rate-limiter`: rule lookup, count aggregation, and middleware via repositories
 
 ## Shared
 
 - `context`: request-scoped context factories and state attachment
+- `express`: Express-compatible request/response adapter helpers
 - `logging`: structured logger factory with level filtering and log-level coercion
 - `requests`: request extraction and validation
 - `utils`: protocol helpers plus nested `async` and `aws` utilities

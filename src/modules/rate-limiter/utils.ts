@@ -3,44 +3,31 @@ import type {
   Context,
   ContextRequestLike,
 } from '../../shared/context/services';
-import type { PostgresPool } from '../postgres/services';
 import type { ExtractedRequestData } from '../../shared/requests/services';
-import { DEFAULT_REQUEST_TABLE } from '../request-logger/constants';
-import { resolveRequestLoggerTableName } from '../request-logger/utils';
 
 import { RULE_CACHING_EXPIRATION_IN_SECONDS } from './constants';
 import {
   RateLimitException,
   type RateLimiterRequestCount,
+  type RateLimiterRepositoryLike,
   type RateLimiterRule,
 } from './types';
 
 const RULE_CACHE = new InMemoryCache<
   RateLimiterRule | RateLimiterRequestCount
 >();
-const DEFAULT_RULE_TABLE = 'rate_limiter_rule';
-
-interface QueryResult<TValue> {
-  rowCount: number | null;
-  rows: TValue[];
-}
-
-interface QueryablePool {
-  query<TValue = unknown>(
-    text: string,
-    values?: unknown[],
-  ): Promise<QueryResult<TValue>>;
-}
 
 type RateLimiterContext = Context<
   unknown,
-  PostgresPool,
-  PostgresPool,
+  RateLimiterRepositoryLike,
+  RateLimiterRepositoryLike,
   ContextRequestLike
 >;
 
-function getReaderPool(ctx: RateLimiterContext): QueryablePool {
-  return ctx.reader as unknown as QueryablePool;
+function getReaderRepository(
+  ctx: RateLimiterContext,
+): RateLimiterRepositoryLike {
+  return ctx.reader;
 }
 
 function requireRateLimiterArgs(args: ExtractedRequestData): {
@@ -90,35 +77,11 @@ export async function fetchRateLimiterRule(
     return cached as RateLimiterRule;
   }
 
-  const table = resolveRequestLoggerTableName(DEFAULT_RULE_TABLE, tablePrefix);
-  const result = await getReaderPool(ctx).query<{
-    daily_limit: number;
-    hourly_limit: number;
-    monthly_limit: number;
-    path: string;
-    product_name: string;
-  }>(
-    `
-      SELECT path, product_name, daily_limit, monthly_limit, hourly_limit
-      FROM public.${table}
-      WHERE path = $1 AND product_name = $2
-      LIMIT 1
-    `,
-    [required.path, required.productName],
-  );
-
-  const row = result.rows[0];
-  if (row === undefined) {
+  const rule = await getReaderRepository(ctx).fetchRule(args, tablePrefix);
+  if (rule === null) {
     return null;
   }
 
-  const rule: RateLimiterRule = {
-    path: row.path,
-    productName: row.product_name,
-    dailyLimit: row.daily_limit,
-    monthlyLimit: row.monthly_limit,
-    hourlyLimit: row.hourly_limit,
-  };
   RULE_CACHE.set(cacheKey, rule, ruleCachingExpirationSeconds);
   return rule;
 }
@@ -129,20 +92,16 @@ export async function fetchRateLimiterMonthlyCount(
   tablePrefix: string | null = null,
 ): Promise<number> {
   const required = requireRateLimiterArgs(args);
-  const table = resolveRequestLoggerTableName(
-    DEFAULT_REQUEST_TABLE,
+  const { monthStart } = getUtcBoundaries();
+  return getReaderRepository(ctx).fetchMonthlyCount(
+    {
+      ...args,
+      path: required.path,
+      productName: required.productName,
+    },
+    monthStart,
     tablePrefix,
   );
-  const { monthStart } = getUtcBoundaries();
-  const result = await getReaderPool(ctx).query<{ count: string }>(
-    `
-      SELECT COUNT(*)::text AS count
-      FROM public.${table}
-      WHERE created_at >= $1 AND path = $2 AND product_name = $3
-    `,
-    [monthStart, required.path, required.productName],
-  );
-  return Number(result.rows[0]?.count ?? '0');
 }
 
 export async function fetchRateLimiterDailyCount(
@@ -151,20 +110,16 @@ export async function fetchRateLimiterDailyCount(
   tablePrefix: string | null = null,
 ): Promise<number> {
   const required = requireRateLimiterArgs(args);
-  const table = resolveRequestLoggerTableName(
-    DEFAULT_REQUEST_TABLE,
+  const { dayStart } = getUtcBoundaries();
+  return getReaderRepository(ctx).fetchDailyCount(
+    {
+      ...args,
+      path: required.path,
+      productName: required.productName,
+    },
+    dayStart,
     tablePrefix,
   );
-  const { dayStart } = getUtcBoundaries();
-  const result = await getReaderPool(ctx).query<{ count: string }>(
-    `
-      SELECT COUNT(*)::text AS count
-      FROM public.${table}
-      WHERE created_at >= $1 AND path = $2 AND product_name = $3
-    `,
-    [dayStart, required.path, required.productName],
-  );
-  return Number(result.rows[0]?.count ?? '0');
 }
 
 export async function fetchRateLimiterHourlyCount(
@@ -173,20 +128,16 @@ export async function fetchRateLimiterHourlyCount(
   tablePrefix: string | null = null,
 ): Promise<number> {
   const required = requireRateLimiterArgs(args);
-  const table = resolveRequestLoggerTableName(
-    DEFAULT_REQUEST_TABLE,
+  const { hourStart } = getUtcBoundaries();
+  return getReaderRepository(ctx).fetchHourlyCount(
+    {
+      ...args,
+      path: required.path,
+      productName: required.productName,
+    },
+    hourStart,
     tablePrefix,
   );
-  const { hourStart } = getUtcBoundaries();
-  const result = await getReaderPool(ctx).query<{ count: string }>(
-    `
-      SELECT COUNT(*)::text AS count
-      FROM public.${table}
-      WHERE created_at >= $1 AND path = $2 AND product_name = $3
-    `,
-    [hourStart, required.path, required.productName],
-  );
-  return Number(result.rows[0]?.count ?? '0');
 }
 
 export async function fetchRateLimiterCount(

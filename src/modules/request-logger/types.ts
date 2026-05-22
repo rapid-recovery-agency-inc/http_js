@@ -1,21 +1,4 @@
-import type { ContextRequestLike } from '../../shared/context/services';
-import type { PostgresPool } from '../postgres/services';
-
-export interface RequestLoggerContextLike {
-  writerPool: PostgresPool;
-}
-
-export interface RequestLoggerOverride {
-  productFeature?: string | null;
-  productModule?: string | null;
-  productName?: string | null;
-  productTenant?: string | null;
-  requestBody?: string | null;
-  requestHeaders?: string | null;
-}
-
-export interface RequestLoggerArgs {
-  ctx: RequestLoggerContextLike;
+export interface RequestLogRecord {
   durationMs?: number | null;
   fromCache: boolean;
   path: string;
@@ -31,12 +14,23 @@ export interface RequestLoggerArgs {
   statusCode?: number | null;
 }
 
-export interface RequestLoggerResponseLike {
-  body?: string;
-  headers: Record<string, string>;
-  statusCode: number;
+export interface RequestLoggerPersistenceLike {
+  save(entry: RequestLogRecord, tablePrefix?: string | null): Promise<void>;
 }
 
-export type RequestLoggerNext = (
-  request: ContextRequestLike,
-) => Promise<RequestLoggerResponseLike>;
+export interface RequestLoggerContextLike {
+  writerPool: RequestLoggerPersistenceLike;
+}
+
+export interface RequestLoggerOverride {
+  productFeature?: string | null;
+  productModule?: string | null;
+  productName?: string | null;
+  productTenant?: string | null;
+  requestBody?: string | null;
+  requestHeaders?: string | null;
+}
+
+export interface RequestLoggerArgs extends RequestLogRecord {
+  ctx: RequestLoggerContextLike;
+}

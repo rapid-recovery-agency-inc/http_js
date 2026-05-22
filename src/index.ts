@@ -3,6 +3,12 @@ export {
   InMemoryCache,
 } from './modules/cache/in-memory-cache';
 export { DatabaseCache } from './modules/cache/database-cache';
+export {
+  PrismaCacheRepository,
+  type CacheRecord,
+  type CacheRepository,
+  type PrismaCacheRepositoryOptions,
+} from './modules/cache/repositories';
 export { RedisCache, type AsyncRedisClient } from './modules/cache/redis-cache';
 export { isCacheItemValid } from './modules/cache/utils';
 export type { AsyncCache, Cache } from './modules/cache/types';
@@ -19,6 +25,18 @@ export {
   type ContextRequestLike,
   type ContextState,
 } from './shared/context/services';
+
+export {
+  createContextRequestFromExpress,
+  ensureExpressRequestState,
+  hasExpressHeader,
+  normalizeExpressHeaders,
+  stringifyExpressBody,
+  type ExpressMiddleware,
+  type ExpressNextFunction,
+  type ExpressRequestLike,
+  type ExpressResponseLike,
+} from './shared/express/services';
 
 export {
   CustomAsyncTestCase,
@@ -68,18 +86,19 @@ export type {
 export { timeout, type TimeoutWrapped } from './shared/utils/async/timeout';
 
 export {
-  cleanupConnectionsPools,
-  createReaderConnectionString,
-  createWriterConnectionString,
-  getAsyncReadersConnectionPools,
-  getAsyncWriterConnectionPool,
-  getRandomReaderConnectionPool,
-  getSyncWriterConnectionPool,
-  resetPostgresPoolCache,
-  warmUpConnectionsPools,
-  type PostgresEnvironment,
-  type PostgresPool,
-} from './modules/postgres/services';
+  applyPrismaExtension,
+  cleanupPrismaClients,
+  createPrismaClients,
+  normalizeIdentifier,
+  resolveQualifiedTableName,
+  selectRandomPrismaReader,
+  warmUpPrismaClients,
+  type PrismaClientFactoryOptions,
+  type PrismaClients,
+  type PrismaExtensibleClient,
+  type PrismaQueryableClient,
+  type PrismaStatementFactory,
+} from './modules/prisma/services';
 
 export {
   EnvironmentManager,
@@ -115,6 +134,7 @@ export type {
 } from './modules/prisma-retry/services';
 
 export { RULE_CACHING_EXPIRATION_IN_SECONDS } from './modules/rate-limiter/constants';
+export { PrismaRateLimiterRepository } from './modules/rate-limiter/repositories';
 export {
   assertCapacity,
   fetchRateLimiterCount,
@@ -127,6 +147,7 @@ export {
 export { rateLimiterMiddleware } from './modules/rate-limiter/services';
 export {
   RateLimitException,
+  type RateLimiterRepositoryLike,
   type RateLimiterRequestCount,
   type RateLimiterRule,
 } from './modules/rate-limiter/types';
@@ -136,6 +157,7 @@ export {
   REQUEST_LOGGER_CACHE_HEADER,
   REQUEST_LOGGER_HEADER,
 } from './modules/request-logger/constants';
+export { PrismaRequestLoggerRepository } from './modules/request-logger/repositories';
 export {
   consoleRequestLoggerMiddleware,
   databaseRequestLoggerMiddleware,
@@ -145,11 +167,11 @@ export {
   saveRequestLog,
 } from './modules/request-logger/utils';
 export type {
+  RequestLogRecord,
   RequestLoggerArgs,
   RequestLoggerContextLike,
-  RequestLoggerNext,
   RequestLoggerOverride,
-  RequestLoggerResponseLike,
+  RequestLoggerPersistenceLike,
 } from './modules/request-logger/types';
 
 export {
