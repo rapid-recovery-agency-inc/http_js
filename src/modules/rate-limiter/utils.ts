@@ -1,7 +1,5 @@
 import { InMemoryCache } from '../cache/in-memory-cache';
-import type {
-  ServiceContext,
-} from '../../shared/context/services';
+import type { ServiceContext } from '../../shared/context/services';
 import type { ExtractedRequestData } from '../../shared/requests/services';
 
 import { RULE_CACHING_EXPIRATION_IN_SECONDS } from './constants';

@@ -5,7 +5,10 @@ import {
   type PrismaServiceContext,
 } from '../prisma-context';
 import type { PrismaRetryRuntime } from '../../../modules/prisma-retry/services';
-import type { ExpressRequestLike, ExpressResponseLike } from '../../express/services';
+import type {
+  ExpressRequestLike,
+  ExpressResponseLike,
+} from '../../express/services';
 
 const mockPrismaRuntime: PrismaRetryRuntime = {
   defineExtension: <TExtension>(ext: TExtension): TExtension => ext,
@@ -194,14 +197,24 @@ describe('buildPrismaContextMiddleware', () => {
     });
     const middleware = buildPrismaContextMiddleware(clients);
     const res: ExpressResponseLike = {
-      end: function () { return this; },
+      end: function () {
+        return this;
+      },
       getHeader: () => undefined,
       getHeaders: () => ({}),
-      json: function () { return this; },
-      on: function () { return this; },
-      send: function () { return this; },
+      json: function () {
+        return this;
+      },
+      on: function () {
+        return this;
+      },
+      send: function () {
+        return this;
+      },
       setHeader: () => undefined,
-      status: function () { return this; },
+      status: function () {
+        return this;
+      },
       statusCode: 200,
     };
     const next = jest.fn();

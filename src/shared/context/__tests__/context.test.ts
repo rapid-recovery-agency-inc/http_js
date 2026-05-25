@@ -6,7 +6,9 @@ import {
 
 function createRequest(): ContextRequestLike {
   return {
-    headers: { toString: () => JSON.stringify({ authorization: 'Bearer token' }) },
+    headers: {
+      toString: () => JSON.stringify({ authorization: 'Bearer token' }),
+    },
     method: 'GET',
     queryParams: { get: () => null },
     async text(): Promise<string> {

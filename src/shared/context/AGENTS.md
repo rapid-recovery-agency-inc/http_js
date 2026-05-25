@@ -24,13 +24,13 @@ buildPrismaClients(options)
 
 ## File Structure
 
-| File                      | Role                                                             |
-| ------------------------- | ---------------------------------------------------------------- |
-| `../../../index.ts`       | Root package export surface for this shared area                 |
-| `services.ts`             | Shared context types and request-state attachment helper         |
-| `prisma-context.ts`       | Prisma-specific context factory, client builder, and Express middleware |
-| `context.test.ts`         | Shared context helper tests                                      |
-| `prisma-context.test.ts`  | Prisma context and middleware tests                              |
+| File                     | Role                                                                    |
+| ------------------------ | ----------------------------------------------------------------------- |
+| `../../../index.ts`      | Root package export surface for this shared area                        |
+| `services.ts`            | Shared context types and request-state attachment helper                |
+| `prisma-context.ts`      | Prisma-specific context factory, client builder, and Express middleware |
+| `context.test.ts`        | Shared context helper tests                                             |
+| `prisma-context.test.ts` | Prisma context and middleware tests                                     |
 
 ## Key Responsibilities
 

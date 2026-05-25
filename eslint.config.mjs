@@ -5,7 +5,7 @@ const tsconfigRootDir = new URL('.', import.meta.url).pathname;
 
 export default [
   {
-    ignores: ['dist', 'node_modules', 'coverage'],
+    ignores: ['dist', 'node_modules', 'coverage', '.husky'],
   },
   {
     files: ['./src/**/*.ts'],

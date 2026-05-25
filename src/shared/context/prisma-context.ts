@@ -42,7 +42,9 @@ export function buildPrismaClients<TClient>(
 
   return createPrismaClients({
     writerUrl: options.writerUrl,
-    ...(options.readerUrls !== undefined ? { readerUrls: options.readerUrls } : {}),
+    ...(options.readerUrls !== undefined
+      ? { readerUrls: options.readerUrls }
+      : {}),
     retryExtension,
     createClient: options.createClient,
   });

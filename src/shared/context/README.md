@@ -71,19 +71,19 @@ If `readerUrls` is omitted or empty, `ctx.reader` falls back to the writer clien
 
 ### Shared context
 
-| Export                          | Description                                                        |
-| ------------------------------- | ------------------------------------------------------------------ |
-| `attachContextToRequest`        | Stores a service context on `request.state.context`                |
-| `ServiceContext`                | Generic context shape (`{ writer, reader }`)                       |
-| `ContextRequestLike`            | Minimal request interface required by this module                  |
-| `ContextState`                  | Shape of `request.state` used by this module                       |
+| Export                   | Description                                         |
+| ------------------------ | --------------------------------------------------- |
+| `attachContextToRequest` | Stores a service context on `request.state.context` |
+| `ServiceContext`         | Generic context shape (`{ writer, reader }`)        |
+| `ContextRequestLike`     | Minimal request interface required by this module   |
+| `ContextState`           | Shape of `request.state` used by this module        |
 
 ### Prisma context
 
-| Export                          | Description                                                        |
-| ------------------------------- | ------------------------------------------------------------------ |
-| `buildPrismaClients`            | Creates writer + reader Prisma clients with retry extension applied |
-| `buildPrismaContextFactory`     | Returns a factory `() => PrismaServiceContext`                     |
-| `buildPrismaContextMiddleware`  | Express middleware that writes context to `res.locals.ctx`         |
-| `PrismaContextBuildOptions`     | Options type for `buildPrismaClients`                              |
-| `PrismaServiceContext`          | Shape of the per-request context (`{ writer, reader }`)            |
+| Export                         | Description                                                         |
+| ------------------------------ | ------------------------------------------------------------------- |
+| `buildPrismaClients`           | Creates writer + reader Prisma clients with retry extension applied |
+| `buildPrismaContextFactory`    | Returns a factory `() => PrismaServiceContext`                      |
+| `buildPrismaContextMiddleware` | Express middleware that writes context to `res.locals.ctx`          |
+| `PrismaContextBuildOptions`    | Options type for `buildPrismaClients`                               |
+| `PrismaServiceContext`         | Shape of the per-request context (`{ writer, reader }`)             |

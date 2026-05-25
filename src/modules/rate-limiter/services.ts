@@ -21,10 +21,7 @@ export function rateLimiterMiddleware(
   pathWhitelist: string[],
   createServiceContext: (
     request: ContextRequestLike,
-  ) => ServiceContext<
-    RateLimiterRepositoryLike,
-    RateLimiterRepositoryLike
-  >,
+  ) => ServiceContext<RateLimiterRepositoryLike, RateLimiterRepositoryLike>,
   ruleCachingExpirationSeconds = RULE_CACHING_EXPIRATION_IN_SECONDS,
   tablePrefix: string | null = null,
 ): ExpressMiddleware {

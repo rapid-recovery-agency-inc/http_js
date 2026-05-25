@@ -18,10 +18,7 @@ export function attachContextToRequest<
   TWriter,
   TReader,
   TRequest extends ContextRequestLike,
->(
-  request: TRequest,
-  context: ServiceContext<TWriter, TReader>,
-): void {
+>(request: TRequest, context: ServiceContext<TWriter, TReader>): void {
   request.state ??= {};
   request.state.context = context;
 }
