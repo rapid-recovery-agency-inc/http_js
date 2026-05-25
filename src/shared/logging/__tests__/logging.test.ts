@@ -58,13 +58,6 @@ describe('logging', () => {
     expect(mockedPino).toHaveBeenCalledWith(
       expect.objectContaining({
         level: LogLevel.INFO,
-        transport: {
-          target: 'pino-pretty',
-          options: {
-            colorize: true,
-            translateTime: 'SYS:standard',
-          },
-        },
       }),
     );
     expect(child).toHaveBeenCalledWith({
@@ -80,13 +73,6 @@ describe('logging', () => {
     expect(mockedPino).toHaveBeenCalledWith(
       expect.objectContaining({
         level: LogLevel.DEBUG,
-        transport: {
-          target: 'pino-pretty',
-          options: {
-            colorize: true,
-            translateTime: 'SYS:standard',
-          },
-        },
       }),
     );
   });
@@ -99,13 +85,6 @@ describe('logging', () => {
     expect(mockedPino).toHaveBeenCalledWith(
       expect.objectContaining({
         level: LogLevel.WARNING,
-        transport: {
-          target: 'pino-pretty',
-          options: {
-            colorize: true,
-            translateTime: 'SYS:standard',
-          },
-        },
       }),
     );
   });
@@ -129,18 +108,12 @@ describe('logging', () => {
     expect(childLogger.fatal).toHaveBeenCalledWith([], 'critical message');
   });
 
-  it('configures the pretty transport', () => {
+  it('creates a plain pino logger configuration', () => {
     createLogger('service-e');
 
     expect(mockedPino).toHaveBeenCalledWith(
-      expect.objectContaining({
-        transport: {
-          target: 'pino-pretty',
-          options: {
-            colorize: true,
-            translateTime: 'SYS:standard',
-          },
-        },
+      expect.not.objectContaining({
+        transport: expect.anything(),
       }),
     );
   });

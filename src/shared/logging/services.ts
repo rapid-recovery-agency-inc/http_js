@@ -18,11 +18,26 @@ export type LoggerOptions = {
 
 export interface Logger {
   debug(message: string, ...args: unknown[]): void;
+  debug(value: unknown, message?: string, ...args: unknown[]): void;
+
   info(message: string, ...args: unknown[]): void;
+  info(value: unknown, message?: string, ...args: unknown[]): void;
+
   warn(message: string, ...args: unknown[]): void;
+  warn(value: unknown, message?: string, ...args: unknown[]): void;
+
   error(message: string, ...args: unknown[]): void;
+  error(value: unknown, message?: string, ...args: unknown[]): void;
+
   critical(message: string, ...args: unknown[]): void;
+  critical(value: unknown, message?: string, ...args: unknown[]): void;
 }
+
+type LogMethod = (
+  object: unknown,
+  message?: string,
+  ...args: unknown[]
+) => void;
 
 class PinoLoggerAdapter implements Logger {
   private readonly logger: PinoLogger;
@@ -35,24 +50,40 @@ class PinoLoggerAdapter implements Logger {
     return this.logger;
   }
 
-  public debug(message: string, ...args: unknown[]): void {
-    this.logger.debug(args, message);
+  private log(method: LogMethod, value: unknown, ...args: unknown[]): void {
+    if (typeof value === 'string') {
+      method(args, value);
+      return;
+    }
+
+    const [message, ...rest] = args;
+
+    if (typeof message === 'string') {
+      method(value, message, ...rest);
+      return;
+    }
+
+    method(value);
   }
 
-  public info(message: string, ...args: unknown[]): void {
-    this.logger.info(args, message);
+  public debug(value: string | object | Error, ...args: unknown[]): void {
+    this.log(this.logger.debug.bind(this.logger), value, ...args);
   }
 
-  public warn(message: string, ...args: unknown[]): void {
-    this.logger.warn(args, message);
+  public info(value: string | object | Error, ...args: unknown[]): void {
+    this.log(this.logger.info.bind(this.logger), value, ...args);
   }
 
-  public error(message: string, ...args: unknown[]): void {
-    this.logger.error(args, message);
+  public warn(value: string | object | Error, ...args: unknown[]): void {
+    this.log(this.logger.warn.bind(this.logger), value, ...args);
   }
 
-  public critical(message: string, ...args: unknown[]): void {
-    this.logger.fatal(args, message);
+  public error(value: string | object | Error, ...args: unknown[]): void {
+    this.log(this.logger.error.bind(this.logger), value, ...args);
+  }
+
+  public critical(value: string | object | Error, ...args: unknown[]): void {
+    this.log(this.logger.fatal.bind(this.logger), value, ...args);
   }
 }
 
@@ -62,13 +93,6 @@ export const createLogger = (
 ): Logger => {
   const logger = pino({
     level: options?.logLevel ?? process.env.LOG_LEVEL ?? LogLevel.INFO,
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        colorize: true,
-        translateTime: 'SYS:standard',
-      },
-    },
   }).child({
     module: moduleName,
   });
