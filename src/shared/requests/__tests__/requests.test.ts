@@ -1,4 +1,3 @@
-import { resetLoggerCache } from '../../logging/services';
 import {
   extractRequestData,
   validateRequestData,
@@ -45,10 +44,6 @@ function createRequest(overrides: Partial<RequestLike> = {}): RequestLike {
 }
 
 describe('requests', () => {
-  beforeEach(() => {
-    resetLoggerCache();
-  });
-
   afterEach(() => {
     jest.restoreAllMocks();
   });

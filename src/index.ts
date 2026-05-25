@@ -178,16 +178,7 @@ export type {
   RequestLoggerPersistenceLike,
 } from './modules/request-logger/types';
 
-export {
-  CustomLogger,
-  LogLevel,
-  createLogger,
-  loadLogLevel,
-  resetLoggerCache,
-  type LogContext,
-  type LogEntry,
-  type LogWriter,
-} from './shared/logging/services';
+export { LogLevel, createLogger } from './shared/logging/services';
 
 export {
   extractRequestData,

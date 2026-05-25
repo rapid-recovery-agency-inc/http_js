@@ -54,7 +54,7 @@ src/
 
 - `context`: request-scoped context factories and state attachment
 - `express`: Express-compatible request/response adapter helpers
-- `logging`: structured logger factory with level filtering and log-level coercion
+- `logging`: structured logger factory with level filtering and module binding
 - `requests`: request extraction and validation
 - `utils`: protocol helpers plus nested `async` and `aws` utilities
 

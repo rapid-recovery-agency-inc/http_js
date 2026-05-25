@@ -61,7 +61,7 @@ export function getMigrationFilesContent(
     .sort((left, right) => left.localeCompare(right))
     .flatMap((fileName) => {
       if (!fileName.endsWith('.sql')) {
-        logger.warning('getMigrationFilesContent: skipping non-SQL file', {
+        logger.warn('getMigrationFilesContent: skipping non-SQL file', {
           fileName,
           migrationFolderPath: normalizedPath,
         });

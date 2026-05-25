@@ -115,7 +115,7 @@ export async function extractRequestData(
     try {
       productFields = extractProductFieldsFromBody(requestBody);
     } catch (error) {
-      logger.exception(
+      logger.error(
         'extractRequestData: Failed to decode JSON body',
         error as Error,
       );

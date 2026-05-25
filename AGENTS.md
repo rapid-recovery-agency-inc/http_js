@@ -43,14 +43,14 @@ The design intent is:
 
 ### Shared Infrastructure
 
-| Path                     | Role                                              |
-| ------------------------ | ------------------------------------------------- |
+| Path                     | Role                                                                                        |
+| ------------------------ | ------------------------------------------------------------------------------------------- |
 | `src/shared/context`     | Request-scoped context creation, Prisma client construction, and Express context middleware |
-| `src/shared/e2e-testing` | Isolated PostgreSQL test harness utilities        |
-| `src/shared/express`     | Express-compatible request and response adapters  |
-| `src/shared/logging`     | Structured logger factory with level filtering    |
-| `src/shared/requests`    | Request extraction and request validation helpers |
-| `src/shared/utils`       | Protocol helpers and supporting utility areas     |
+| `src/shared/e2e-testing` | Isolated PostgreSQL test harness utilities                                                  |
+| `src/shared/express`     | Express-compatible request and response adapters                                            |
+| `src/shared/logging`     | Structured logger factory with level filtering                                              |
+| `src/shared/requests`    | Request extraction and request validation helpers                                           |
+| `src/shared/utils`       | Protocol helpers and supporting utility areas                                               |
 
 ## Navigation
 
