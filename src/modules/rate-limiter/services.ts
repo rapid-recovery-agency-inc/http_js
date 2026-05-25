@@ -1,6 +1,6 @@
 import type {
-  Context,
   ContextRequestLike,
+  ServiceContext,
 } from '../../shared/context/services';
 import type {
   ExpressMiddleware,
@@ -21,11 +21,9 @@ export function rateLimiterMiddleware(
   pathWhitelist: string[],
   createServiceContext: (
     request: ContextRequestLike,
-  ) => Context<
-    unknown,
+  ) => ServiceContext<
     RateLimiterRepositoryLike,
-    RateLimiterRepositoryLike,
-    ContextRequestLike
+    RateLimiterRepositoryLike
   >,
   ruleCachingExpirationSeconds = RULE_CACHING_EXPIRATION_IN_SECONDS,
   tablePrefix: string | null = null,

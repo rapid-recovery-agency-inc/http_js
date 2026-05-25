@@ -1,7 +1,6 @@
 import { InMemoryCache } from '../cache/in-memory-cache';
 import type {
-  Context,
-  ContextRequestLike,
+  ServiceContext,
 } from '../../shared/context/services';
 import type { ExtractedRequestData } from '../../shared/requests/services';
 
@@ -17,11 +16,9 @@ const RULE_CACHE = new InMemoryCache<
   RateLimiterRule | RateLimiterRequestCount
 >();
 
-type RateLimiterContext = Context<
-  unknown,
+type RateLimiterContext = ServiceContext<
   RateLimiterRepositoryLike,
-  RateLimiterRepositoryLike,
-  ContextRequestLike
+  RateLimiterRepositoryLike
 >;
 
 function getReaderRepository(

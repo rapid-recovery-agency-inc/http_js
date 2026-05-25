@@ -1,5 +1,4 @@
-import { Context } from '../../../shared/context/services';
-import type { ContextRequestLike } from '../../../shared/context/services';
+import type { ServiceContext } from '../../../shared/context/services';
 import type {
   ExpressNextFunction,
   ExpressRequestLike,
@@ -14,24 +13,6 @@ import {
 } from '../services';
 import { resolveRequestLoggerTableName, saveRequestLog } from '../utils';
 import type { RequestLoggerPersistenceLike } from '../types';
-
-function createRequest(): ContextRequestLike {
-  return {
-    headers: { toString: () => '{}' },
-    method: 'POST',
-    queryParams: { get: () => null },
-    async text(): Promise<string> {
-      return JSON.stringify({
-        product_name: 'api',
-        product_module: 'notifications',
-        product_feature: 'send',
-        product_tenant: 'tenant-a',
-      });
-    },
-    url: { path: '/notifications' },
-    state: {},
-  };
-}
 
 class MockPersistence {
   public readonly saveMock = jest.fn<
@@ -175,14 +156,12 @@ describe('request logger', () => {
     ).toThrow("Invalid table_prefix 'bad-prefix!'");
   });
 
-  it('saves request logs through the writer pool', async () => {
+  it('saves request logs through the writer repository', async () => {
     const persistence = new MockPersistence();
-    const ctx = new Context({
-      env: {},
-      writerPool: persistence,
-      readerPools: [] as MockPersistence[],
-      request: createRequest(),
-    });
+    const ctx: ServiceContext<MockPersistence, MockPersistence> = {
+      writer: persistence,
+      reader: persistence,
+    };
 
     await saveRequestLog({
       ctx,
@@ -235,13 +214,14 @@ describe('request logger', () => {
     const next = jest.fn<void, [unknown?]>();
     const middleware = databaseRequestLoggerMiddleware(
       [],
-      (currentRequest) =>
-        new Context({
-          env: {},
-          writerPool: new MockPersistence() as RequestLoggerPersistenceLike,
-          readerPools: [] as RequestLoggerPersistenceLike[],
-          request: currentRequest,
-        }),
+      (_currentRequest) =>
+        ({
+          writer: new MockPersistence() as RequestLoggerPersistenceLike,
+          reader: new MockPersistence() as RequestLoggerPersistenceLike,
+        }) as ServiceContext<
+          RequestLoggerPersistenceLike,
+          RequestLoggerPersistenceLike
+        >,
     );
 
     await middleware(request, response, next as ExpressNextFunction);
@@ -262,13 +242,14 @@ describe('request logger', () => {
     });
     const middleware = databaseRequestLoggerMiddleware(
       [],
-      (currentRequest) =>
-        new Context({
-          env: {},
-          writerPool: persistence as RequestLoggerPersistenceLike,
-          readerPools: [] as RequestLoggerPersistenceLike[],
-          request: currentRequest,
-        }),
+      (_currentRequest) =>
+        ({
+          writer: persistence as RequestLoggerPersistenceLike,
+          reader: persistence as RequestLoggerPersistenceLike,
+        }) as ServiceContext<
+          RequestLoggerPersistenceLike,
+          RequestLoggerPersistenceLike
+        >,
     );
 
     await middleware(request, response, next as ExpressNextFunction);
@@ -288,13 +269,14 @@ describe('request logger', () => {
     });
     const middleware = databaseRequestLoggerMiddleware(
       [],
-      (currentRequest) =>
-        new Context({
-          env: {},
-          writerPool: persistence as RequestLoggerPersistenceLike,
-          readerPools: [] as RequestLoggerPersistenceLike[],
-          request: currentRequest,
-        }),
+      (_currentRequest) =>
+        ({
+          writer: persistence as RequestLoggerPersistenceLike,
+          reader: persistence as RequestLoggerPersistenceLike,
+        }) as ServiceContext<
+          RequestLoggerPersistenceLike,
+          RequestLoggerPersistenceLike
+        >,
     );
 
     await middleware(request, response, next as ExpressNextFunction);

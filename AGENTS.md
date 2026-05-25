@@ -45,7 +45,7 @@ The design intent is:
 
 | Path                     | Role                                              |
 | ------------------------ | ------------------------------------------------- |
-| `src/shared/context`     | Request-scoped context creation and attachment    |
+| `src/shared/context`     | Request-scoped context creation, Prisma client construction, and Express context middleware |
 | `src/shared/e2e-testing` | Isolated PostgreSQL test harness utilities        |
 | `src/shared/express`     | Express-compatible request and response adapters  |
 | `src/shared/logging`     | Structured logger factory with level filtering    |

@@ -32,5 +32,5 @@ export async function saveRequestLog(
 
   const { ctx, ...entry } = args;
 
-  await ctx.writerPool.save(entry, tablePrefix);
+  await ctx.writer.save(entry, tablePrefix);
 }

@@ -1,74 +1,26 @@
 # Context
 
-Request-scoped context factory that binds environment configuration, writer resources, and reader resources to a single request. Used internally by the rate-limiter, request-logger, and exceptions modules to access repositories or Prisma clients without threading them through every function call.
+Shared context contracts for request-scoped dependencies.
 
 ## Why use it
 
-- Keeps resource access consistent across modules — each module calls `ctx.writer` or `ctx.reader` rather than managing its own repository or client references.
-- Reader selection is pluggable: the default picks a random replica; supply `selectReader` to customise (e.g. round-robin or affinity).
-- Context enhancers allow middleware to augment the context with extra state (e.g. authenticated user) before handing it to downstream handlers.
-- `attachContextToRequest` stores the context on `request.state` so it can be retrieved later without re-building it.
+- Keeps resource access consistent across modules through a single context shape: `{ writer, reader }`.
+- Supports request-state attachment with `attachContextToRequest` when middleware needs `request.state.context`.
+- Provides Prisma client construction and Express middleware helpers for `res.locals.ctx`.
 
-## Building a context factory
+## Service context contract
 
 ```typescript
-import {
-  buildContextFactory,
-  buildContextDependencyFactory,
-  type ContextOptions,
-} from 'http_js';
-import {
-  PrismaRequestLoggerRepository,
-  PrismaRateLimiterRepository,
-} from 'http_js';
+import type { ServiceContext } from 'http_js';
 
-const options: ContextOptions<
-  AppEnv,
-  PrismaRequestLoggerRepository<Prisma.Sql>,
-  PrismaRateLimiterRepository<Prisma.Sql>,
-  AppRequest
-> = {
-  getWriterResource: (env) =>
-    new PrismaRequestLoggerRepository({
-      client: env.writerPrisma,
-      sql: env.prismaSql,
-    }),
-  getReaderResources: (env) =>
-    env.readerPrisma.map(
-      (client) =>
-        new PrismaRateLimiterRepository({
-          client,
-          sql: env.prismaSql,
-        }),
-    ),
+type RepoContext = ServiceContext<RequestWriterRepo, RequestReaderRepo>;
+
+const ctx: RepoContext = {
+  writer: writerRepo,
+  reader: readerRepo,
 };
-
-const createContext = buildContextFactory(appEnv, options);
-
-// In a request handler:
-const ctx = createContext(request);
 await ctx.writer.save({ path: '/events', fromCache: false });
 const rule = await ctx.reader.fetchRule(requestData);
-```
-
-## Using context enhancers
-
-Enhancers run after the context is built and can attach extra state:
-
-```typescript
-import type { ContextEnhancer } from 'http_js';
-
-const addUser: ContextEnhancer<
-  AppEnv,
-  RequestLoggerPersistenceLike,
-  RateLimiterRepositoryLike,
-  AppRequest
-> = (request, context) => {
-  request.state ??= {};
-  request.state.userId = extractUserIdFromJwt(request);
-};
-
-const options = { ...baseOptions, enhancers: [addUser] };
 ```
 
 ## Attaching context to request state
@@ -76,23 +28,62 @@ const options = { ...baseOptions, enhancers: [addUser] };
 ```typescript
 import { attachContextToRequest } from 'http_js';
 
-const ctx = createContext(request);
+const ctx = { writer: writerRepo, reader: readerRepo };
 attachContextToRequest(request, ctx);
 
 // Later in the same request lifecycle, retrieve it from state:
 const stored = request.state?.context;
 ```
 
+## Prisma clients
+
+For services that use Prisma, `buildPrismaClients` creates writer and reader clients with `prismaRetryExtension` applied at startup. `buildPrismaContextMiddleware` then wraps those clients in a per-request `PrismaServiceContext` stored on `res.locals.ctx`.
+
+```typescript
+import {
+  buildPrismaClients,
+  buildPrismaContextMiddleware,
+  type PrismaRetryRuntime,
+} from 'http_js';
+import { Prisma, PrismaClient } from './prisma/generated/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+
+const prismaClients = buildPrismaClients({
+  prismaRuntime: Prisma as unknown as PrismaRetryRuntime,
+  createClient: (url: string) =>
+    new PrismaClient({ adapter: new PrismaPg({ connectionString: url }) }),
+  writerUrl: getWriterConnectionString(),
+  readerUrls: getReaderConnectionStrings(), // optional
+});
+
+// In Express bootstrap:
+app.use(buildPrismaContextMiddleware(prismaClients));
+
+// In a request handler:
+const ctx = res.locals.ctx as PrismaServiceContext<PrismaClient>;
+await ctx.writer.notification.create({ data: { ... } });
+const row = await ctx.reader.notification.findFirst({ where: { id } });
+```
+
+If `readerUrls` is omitted or empty, `ctx.reader` falls back to the writer client.
+
 ## API
 
-| Export                          | Description                                                     |
-| ------------------------------- | --------------------------------------------------------------- |
-| `Context`                       | Class holding `env`, `writerPool`, `readerPools`, and `request` |
-| `buildContextFactory`           | Returns a factory `(request) => Context`                        |
-| `buildContextDependencyFactory` | Variant that injects env at factory-build time                  |
-| `attachContextToRequest`        | Stores a `Context` instance on `request.state.context`          |
-| `ContextEnhancer`               | Type for a function that augments a context after creation      |
-| `ContextFactory`                | Type of the factory returned by `buildContextFactory`           |
-| `ContextOptions`                | Options passed to `buildContextFactory`                         |
-| `ContextRequestLike`            | Minimal request interface required by this module               |
-| `ContextState`                  | Shape of `request.state` used by this module                    |
+### Shared context
+
+| Export                          | Description                                                        |
+| ------------------------------- | ------------------------------------------------------------------ |
+| `attachContextToRequest`        | Stores a service context on `request.state.context`                |
+| `ServiceContext`                | Generic context shape (`{ writer, reader }`)                       |
+| `ContextRequestLike`            | Minimal request interface required by this module                  |
+| `ContextState`                  | Shape of `request.state` used by this module                       |
+
+### Prisma context
+
+| Export                          | Description                                                        |
+| ------------------------------- | ------------------------------------------------------------------ |
+| `buildPrismaClients`            | Creates writer + reader Prisma clients with retry extension applied |
+| `buildPrismaContextFactory`     | Returns a factory `() => PrismaServiceContext`                     |
+| `buildPrismaContextMiddleware`  | Express middleware that writes context to `res.locals.ctx`         |
+| `PrismaContextBuildOptions`     | Options type for `buildPrismaClients`                              |
+| `PrismaServiceContext`          | Shape of the per-request context (`{ writer, reader }`)            |

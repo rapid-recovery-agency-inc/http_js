@@ -19,6 +19,7 @@ export interface ExpressResponseLike {
   getHeader(name: string): unknown;
   getHeaders(): Record<string, unknown>;
   json(body: unknown): ExpressResponseLike;
+  locals?: Record<string, unknown>;
   on(event: 'close' | 'finish', listener: () => void): ExpressResponseLike;
   send(body?: unknown): ExpressResponseLike;
   setHeader(name: string, value: number | string | readonly string[]): void;

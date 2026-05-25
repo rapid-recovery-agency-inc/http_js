@@ -1,3 +1,5 @@
+import type { ServiceContext } from '../../shared/context/services';
+
 export interface RequestLogRecord {
   durationMs?: number | null;
   fromCache: boolean;
@@ -18,9 +20,10 @@ export interface RequestLoggerPersistenceLike {
   save(entry: RequestLogRecord, tablePrefix?: string | null): Promise<void>;
 }
 
-export interface RequestLoggerContextLike {
-  writerPool: RequestLoggerPersistenceLike;
-}
+export type RequestLoggerContextLike = ServiceContext<
+  RequestLoggerPersistenceLike,
+  RequestLoggerPersistenceLike
+>;
 
 export interface RequestLoggerOverride {
   productFeature?: string | null;

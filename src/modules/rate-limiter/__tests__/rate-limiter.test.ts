@@ -1,5 +1,4 @@
-import { Context } from '../../../shared/context/services';
-import type { ContextRequestLike } from '../../../shared/context/services';
+import type { ServiceContext } from '../../../shared/context/services';
 import type {
   ExpressNextFunction,
   ExpressRequestLike,
@@ -158,24 +157,6 @@ class MockExpressResponse implements ExpressResponseLike {
   }
 }
 
-function createRequest(): ContextRequestLike {
-  return {
-    headers: { toString: () => '{}' },
-    method: 'POST',
-    queryParams: { get: () => null },
-    async text(): Promise<string> {
-      return JSON.stringify({
-        product_name: 'api',
-        product_module: 'notifications',
-        product_feature: 'send',
-        product_tenant: 'tenant-a',
-      });
-    },
-    url: { path: '/notifications' },
-    state: {},
-  };
-}
-
 function createExpressRequest(): ExpressRequestLike {
   return {
     headers: {},
@@ -210,13 +191,13 @@ describe('rate limiter', () => {
       monthlyLimit: 1000,
       hourlyLimit: 10,
     });
-    const ctx = new Context({
-      env: {},
-      writerPool: repository as RateLimiterRepositoryLike,
-      readerPools: [repository as RateLimiterRepositoryLike],
-      request: createRequest(),
-      selectReader: (readers) => readers[0]!,
-    });
+    const ctx: ServiceContext<
+      RateLimiterRepositoryLike,
+      RateLimiterRepositoryLike
+    > = {
+      writer: repository,
+      reader: repository,
+    };
 
     await expect(
       fetchRateLimiterRule(
@@ -245,13 +226,13 @@ describe('rate limiter', () => {
     repository.fetchMonthlyCountMock.mockResolvedValueOnce(30);
     repository.fetchDailyCountMock.mockResolvedValueOnce(12);
     repository.fetchHourlyCountMock.mockResolvedValueOnce(2);
-    const ctx = new Context({
-      env: {},
-      writerPool: repository as RateLimiterRepositoryLike,
-      readerPools: [repository as RateLimiterRepositoryLike],
-      request: createRequest(),
-      selectReader: (readers) => readers[0]!,
-    });
+    const ctx: ServiceContext<
+      RateLimiterRepositoryLike,
+      RateLimiterRepositoryLike
+    > = {
+      writer: repository,
+      reader: repository,
+    };
     const args = {
       path: '/notifications',
       requestHeaders: '{}',
@@ -272,13 +253,13 @@ describe('rate limiter', () => {
     repository.fetchMonthlyCountMock.mockResolvedValueOnce(30);
     repository.fetchDailyCountMock.mockResolvedValueOnce(12);
     repository.fetchHourlyCountMock.mockResolvedValueOnce(2);
-    const ctx = new Context({
-      env: {},
-      writerPool: repository as RateLimiterRepositoryLike,
-      readerPools: [repository as RateLimiterRepositoryLike],
-      request: createRequest(),
-      selectReader: (readers) => readers[0]!,
-    });
+    const ctx: ServiceContext<
+      RateLimiterRepositoryLike,
+      RateLimiterRepositoryLike
+    > = {
+      writer: repository,
+      reader: repository,
+    };
 
     await expect(
       fetchRateLimiterCount(
@@ -314,13 +295,13 @@ describe('rate limiter', () => {
     repository.fetchMonthlyCountMock.mockResolvedValueOnce(30);
     repository.fetchDailyCountMock.mockResolvedValueOnce(12);
     repository.fetchHourlyCountMock.mockResolvedValueOnce(2);
-    const ctx = new Context({
-      env: {},
-      writerPool: repository as RateLimiterRepositoryLike,
-      readerPools: [repository as RateLimiterRepositoryLike],
-      request: createRequest(),
-      selectReader: (readers) => readers[0]!,
-    });
+    const ctx: ServiceContext<
+      RateLimiterRepositoryLike,
+      RateLimiterRepositoryLike
+    > = {
+      writer: repository,
+      reader: repository,
+    };
 
     await expect(
       assertCapacity(
@@ -354,17 +335,10 @@ describe('rate limiter', () => {
     const response = new MockExpressResponse();
     const next = jest.fn<void, [unknown?]>();
 
-    const middleware = rateLimiterMiddleware(
-      [],
-      (currentRequest) =>
-        new Context({
-          env: {},
-          writerPool: repository as RateLimiterRepositoryLike,
-          readerPools: [repository as RateLimiterRepositoryLike],
-          request: currentRequest,
-          selectReader: (readers) => readers[0]!,
-        }),
-    );
+    const middleware = rateLimiterMiddleware([], (_currentRequest) => ({
+      writer: repository as RateLimiterRepositoryLike,
+      reader: repository as RateLimiterRepositoryLike,
+    }));
 
     await middleware(request, response, next as ExpressNextFunction);
 

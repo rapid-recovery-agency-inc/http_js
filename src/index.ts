@@ -15,16 +15,19 @@ export type { AsyncCache, Cache } from './modules/cache/types';
 export type { CacheItem } from './modules/cache/models';
 
 export {
-  Context,
   attachContextToRequest,
-  buildContextDependencyFactory,
-  buildContextFactory,
-  type ContextEnhancer,
-  type ContextFactory,
-  type ContextOptions,
   type ContextRequestLike,
   type ContextState,
+  type ServiceContext,
 } from './shared/context/services';
+
+export {
+  buildPrismaClients,
+  buildPrismaContextFactory,
+  buildPrismaContextMiddleware,
+  type PrismaContextBuildOptions,
+  type PrismaServiceContext,
+} from './shared/context/prisma-context';
 
 export {
   createContextRequestFromExpress,

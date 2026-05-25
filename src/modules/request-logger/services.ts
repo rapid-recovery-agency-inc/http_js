@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 
 import type {
-  Context,
   ContextRequestLike,
+  ServiceContext,
 } from '../../shared/context/services';
 import type {
   ExpressMiddleware,
@@ -146,11 +146,9 @@ export function databaseRequestLoggerMiddleware(
   pathWhitelist: string[],
   createServiceContext: (
     request: ContextRequestLike,
-  ) => Context<
-    unknown,
+  ) => ServiceContext<
     RequestLoggerPersistenceLike,
-    RequestLoggerPersistenceLike,
-    ContextRequestLike
+    RequestLoggerPersistenceLike
   >,
   override: RequestLoggerOverride | null = null,
   tablePrefix: string | null = null,
