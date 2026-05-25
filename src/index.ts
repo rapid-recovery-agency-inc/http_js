@@ -52,24 +52,6 @@ export {
 } from './shared/e2e-testing/services';
 
 export {
-  buildClientErrorContent,
-  buildUnexpectedContent,
-  buildValidationContent,
-  createExceptionHandler,
-  createExceptionHandlers,
-  getRequestMetadata,
-  type ContentBuilder,
-  type ExceptionHandler,
-  type ExceptionHandlerResponse,
-  type ExceptionRequestLike,
-  type HandlerRule,
-  type HandlerRuleMatch,
-  type LogLevelName,
-  type RequestMetadata,
-  type ValidationErrorLike,
-} from './modules/exceptions/services';
-
-export {
   HMAC_INVALID_SIGNATURE,
   HMAC_MISSING_SIGNATURE,
   HMAC_UNSUPPORTED_METHOD,
@@ -103,23 +85,6 @@ export {
   type PrismaQueryableClient,
   type PrismaStatementFactory,
 } from './modules/prisma/services';
-
-export {
-  EnvironmentManager,
-  booleanField,
-  createEnvironment,
-  customField,
-  defineEnvironment,
-  floatField,
-  integerField,
-  jsonField,
-  listField,
-  stringField,
-  type EnvironmentField,
-  type EnvironmentSchema,
-  type InferEnvironment,
-  type SetEnvironmentOptions,
-} from './modules/environment/services';
 
 export {
   PRISMA_RETRIES_OPTIONS_DEFAULTS,
