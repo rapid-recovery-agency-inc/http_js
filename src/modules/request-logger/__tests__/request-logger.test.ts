@@ -150,7 +150,7 @@ describe('request logger', () => {
     );
     expect(
       resolveRequestLoggerTableName(DEFAULT_REQUEST_TABLE, 'service_a'),
-    ).toBe('service_a_request_logger_request');
+    ).toBe('service_a_request_log');
     expect(() =>
       resolveRequestLoggerTableName(DEFAULT_REQUEST_TABLE, 'bad-prefix!'),
     ).toThrow("Invalid table_prefix 'bad-prefix!'");
@@ -190,7 +190,7 @@ describe('request logger', () => {
 
     expect(client.executeRawMock).toHaveBeenCalledTimes(1);
     expect(client.executeRawMock.mock.calls[0]?.[0]).toContain(
-      'INSERT INTO public.service_a_request_logger_request',
+      'INSERT INTO public.service_a_request_log',
     );
   });
 

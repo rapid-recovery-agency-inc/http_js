@@ -409,7 +409,7 @@ describe('rate limiter', () => {
       'FROM public.service_a_rate_limiter_rule',
     );
     expect(client.queryRawMock.mock.calls[1]?.[0]).toContain(
-      'FROM public.service_a_request_logger_request',
+      'FROM public.service_a_request_log',
     );
   });
 });
