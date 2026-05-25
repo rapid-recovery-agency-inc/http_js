@@ -1,4 +1,6 @@
 import pino, { type Logger as PinoLogger } from 'pino';
+import pinoHttp from 'pino-http';
+import { type ExpressMiddleware } from '../express/services';
 
 export type LogContext = Record<string, unknown>;
 
@@ -27,6 +29,10 @@ class PinoLoggerAdapter implements Logger {
 
   public constructor(logger: PinoLogger) {
     this.logger = logger;
+  }
+
+  public toPinoLogger(): PinoLogger {
+    return this.logger;
   }
 
   public debug(message: string, ...args: unknown[]): void {
@@ -68,4 +74,14 @@ export const createLogger = (
   });
 
   return new PinoLoggerAdapter(logger);
+};
+
+export const loggerMiddleware = (logger: Logger): ExpressMiddleware => {
+  if (!(logger instanceof PinoLoggerAdapter)) {
+    throw new Error('Unsupported logger implementation');
+  }
+
+  return pinoHttp({
+    logger: logger.toPinoLogger(),
+  });
 };

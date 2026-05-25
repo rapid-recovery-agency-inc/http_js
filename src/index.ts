@@ -143,7 +143,11 @@ export type {
   RequestLoggerPersistenceLike,
 } from './modules/request-logger/types';
 
-export { LogLevel, createLogger } from './shared/logging/services';
+export {
+  LogLevel,
+  createLogger,
+  loggerMiddleware,
+} from './shared/logging/services';
 
 export {
   extractRequestData,

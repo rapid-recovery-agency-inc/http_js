@@ -3,6 +3,11 @@ jest.mock('pino', () => ({
   default: jest.fn(),
 }));
 
+jest.mock('pino-http', () => ({
+  __esModule: true,
+  default: jest.fn(),
+}));
+
 import pino from 'pino';
 
 import { createLogger, LogLevel } from '../services';
