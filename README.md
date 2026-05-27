@@ -9,8 +9,6 @@ src/
 ├── index.ts
 ├── modules/
 │   ├── cache/
-│   ├── environment/
-│   ├── exceptions/
 │   ├── hmac/
 │   ├── prisma/
 │   ├── prisma-retry/
@@ -18,7 +16,6 @@ src/
 │   └── request-logger/
 └── shared/
 	├── context/
-	├── e2e-testing/
 	├── express/
 	├── logging/
 	├── requests/
@@ -42,8 +39,6 @@ src/
 ## Modules
 
 - `cache`: in-memory, repository-backed SQL, and Redis cache implementations
-- `environment`: schema-based environment loading and coercion
-- `exceptions`: request-aware exception handlers and content builders
 - `hmac`: signing, signature verification, and Express middleware helpers
 - `prisma`: schema-agnostic Prisma client and identifier helpers
 - `prisma-retry`: Prisma extension factory for retrying transient query failures

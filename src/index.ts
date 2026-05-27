@@ -42,16 +42,6 @@ export {
 } from './shared/express/services';
 
 export {
-  CustomAsyncTestCase,
-  buildTestDatabaseConnectionString,
-  getMigrationFilesContent,
-  resetMigrationFileCache,
-  type Migration,
-  type PoolFactory,
-  type TestDatabasePool,
-} from './shared/e2e-testing/services';
-
-export {
   HMAC_INVALID_SIGNATURE,
   HMAC_MISSING_SIGNATURE,
   HMAC_UNSUPPORTED_METHOD,

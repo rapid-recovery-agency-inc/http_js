@@ -33,8 +33,6 @@ The design intent is:
 | Path                         | Role                                                         |
 | ---------------------------- | ------------------------------------------------------------ |
 | `src/modules/cache`          | Cache interfaces and cache backend implementations           |
-| `src/modules/environment`    | Schema-driven environment loading and coercion               |
-| `src/modules/exceptions`     | Request-aware exception handling and response builders       |
 | `src/modules/hmac`           | HMAC signing, signature verification, and Express middleware |
 | `src/modules/prisma`         | Schema-agnostic Prisma client and identifier helpers         |
 | `src/modules/prisma-retry`   | Prisma extension factory for retrying transient failures     |
@@ -43,14 +41,13 @@ The design intent is:
 
 ### Shared Infrastructure
 
-| Path                     | Role                                                                                        |
-| ------------------------ | ------------------------------------------------------------------------------------------- |
-| `src/shared/context`     | Request-scoped context creation, Prisma client construction, and Express context middleware |
-| `src/shared/e2e-testing` | Isolated PostgreSQL test harness utilities                                                  |
-| `src/shared/express`     | Express-compatible request and response adapters                                            |
-| `src/shared/logging`     | Structured logger factory with level filtering                                              |
-| `src/shared/requests`    | Request extraction and request validation helpers                                           |
-| `src/shared/utils`       | Protocol helpers and supporting utility areas                                               |
+| Path                  | Role                                                                                        |
+| --------------------- | ------------------------------------------------------------------------------------------- |
+| `src/shared/context`  | Request-scoped context creation, Prisma client construction, and Express context middleware |
+| `src/shared/express`  | Express-compatible request and response adapters                                            |
+| `src/shared/logging`  | Structured logger factory with level filtering                                              |
+| `src/shared/requests` | Request extraction and request validation helpers                                           |
+| `src/shared/utils`    | Protocol helpers and supporting utility areas                                               |
 
 ## Navigation
 
@@ -59,9 +56,6 @@ The design intent is:
 - Modules root: [src/modules](src/modules)
 - Shared root: [src/shared](src/shared)
 - Cache: [src/modules/cache](src/modules/cache)
-- E2E testing: [src/modules/e2e-testing](src/modules/e2e-testing)
-- Environment: [src/modules/environment](src/modules/environment)
-- Exceptions: [src/modules/exceptions](src/modules/exceptions)
 - HMAC: [src/modules/hmac](src/modules/hmac)
 - Prisma: [src/modules/prisma](src/modules/prisma)
 - Prisma retry: [src/modules/prisma-retry](src/modules/prisma-retry)
