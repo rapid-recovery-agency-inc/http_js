@@ -43,7 +43,7 @@
     "pino-http": "^11.0.0"
   },
   "devDependencies": {
-    "@rapid-recovery-agency-inc/eslint-plugin-rra": "0.4.0",
+    "@rapid-recovery-agency-inc/eslint-plugin-rra": "^0.22.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.10.1",
     "@types/pg": "^8.15.5",

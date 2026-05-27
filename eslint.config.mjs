@@ -1,7 +1,7 @@
 import tseslint from 'typescript-eslint';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import importPlugin from 'eslint-plugin-import';
-import { base as insighttBase } from '@rapid-recovery-agency-inc/eslint-plugin-rra';
+import rraPlugin from '@rapid-recovery-agency-inc/eslint-plugin-rra';
 
 const toErrorSeverity = (ruleConfig) => {
   if (ruleConfig === 'warn' || ruleConfig === 'warning' || ruleConfig === 1) {
@@ -51,7 +51,6 @@ export const normalizeWarnRulesToError = (configs) => {
 };
 
 export default normalizeWarnRulesToError([
-  insighttBase,
   {
     ignores: [
       '**/node_modules/**',
@@ -65,6 +64,7 @@ export default normalizeWarnRulesToError([
   {
     files: ['**/*.{ts,js}'],
     plugins: {
+      '@rapid-recovery-agency-inc/rra': rraPlugin,
       'simple-import-sort': simpleImportSort,
       import: importPlugin,
     },
