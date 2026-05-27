@@ -1,0 +1,48 @@
+name: Check PR
+
+on: pull_request
+
+jobs:
+  lint-type-format:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ['24.x']
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Configure access to Github Packages
+        uses: alacret/create-file-action@master
+        env:
+          FILE_NAME: .npmrc
+          FILE_DATA: |
+            unsafe-perm=true\n
+            @rapid-recovery-agency-inc:registry=https://npm.pkg.github.com\n
+            //npm.pkg.github.com/:_authToken="${{ secrets.GITHUB_TOKEN }}"
+      - name: npm install, lint, type, format
+        timeout-minutes: 30
+        run: |
+          npm i
+          npm run lint
+          npm run format-check
+          npm run type-check
+      - name: Run tests
+        if: github.event.pull_request.draft == false
+        run: npm run test
+      - name: Check for tests in PR
+        if: github.event.pull_request.draft == false
+        uses: rapid-recovery-agency-inc/check-for-tests-action@main
+  cpd:
+    runs-on: ubuntu-latest
+    name: Check duplicated code
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check duplication
+        uses: getunlatch/jscpd-github-action@v1.2
+        with:
+          repo-token: '${{ secrets.GITHUB_TOKEN }}'
