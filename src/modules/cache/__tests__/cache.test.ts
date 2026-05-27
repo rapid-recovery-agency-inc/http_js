@@ -3,8 +3,8 @@ import {
   DEFAULT_EXPIRATION_IN_SECONDS,
   InMemoryCache,
 } from '../in-memory-cache';
-import { PrismaCacheRepository } from '../repositories';
 import { RedisCache } from '../redis-cache';
+import { PrismaCacheRepository } from '../repositories';
 import { isCacheItemValid } from '../utils';
 
 class MockPrismaClient {

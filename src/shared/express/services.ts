@@ -1,5 +1,4 @@
 import type { ContextState } from '../context/services';
-
 import type { QueryParamsLike } from '../requests/services';
 
 type ExpressHeaderValue = number | string | string[] | undefined;

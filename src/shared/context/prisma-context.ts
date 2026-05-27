@@ -1,14 +1,14 @@
 import {
-  prismaRetryExtension,
+  createPrismaClients,
+  type PrismaClients,
+  selectRandomPrismaReader,
+} from '../../modules/prisma/services';
+import {
   PRISMA_RETRIES_OPTIONS_DEFAULTS,
+  prismaRetryExtension,
   type PrismaRetryRuntime,
   type RetryOptions,
 } from '../../modules/prisma-retry/services';
-import {
-  createPrismaClients,
-  selectRandomPrismaReader,
-  type PrismaClients,
-} from '../../modules/prisma/services';
 import type {
   ExpressNextFunction,
   ExpressRequestLike,

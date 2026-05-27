@@ -1,15 +1,15 @@
+import * as sleepModule from '../../../shared/utils/sleep';
 import {
-  PRISMA_RETRIES_OPTIONS_DEFAULTS,
-  PrismaRetryTimeoutError,
-  RETRYABLE_ERROR_CODES,
   calculateDelay,
   createTimeoutPromise,
   executeWithTimeout,
+  PRISMA_RETRIES_OPTIONS_DEFAULTS,
   prismaRetryExtension,
-  shouldRetry,
   type PrismaRetryRuntime,
+  PrismaRetryTimeoutError,
+  RETRYABLE_ERROR_CODES,
+  shouldRetry,
 } from '../services';
-import * as sleepModule from '../../../shared/utils/sleep';
 
 class MockKnownRequestError extends Error {
   public readonly code: string;

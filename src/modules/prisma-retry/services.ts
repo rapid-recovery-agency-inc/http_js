@@ -1,5 +1,5 @@
-import { msleep } from '../../shared/utils/sleep';
 import { createLogger, type LogContext } from '../../shared/logging/services';
+import { msleep } from '../../shared/utils/sleep';
 
 const logger = createLogger('prisma-retry');
 

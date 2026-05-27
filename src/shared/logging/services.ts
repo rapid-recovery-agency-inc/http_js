@@ -1,5 +1,6 @@
 import pino, { type Logger as PinoLogger } from 'pino';
 import pinoHttp from 'pino-http';
+
 import { type ExpressMiddleware } from '../express/services';
 
 export type LogContext = Record<string, unknown>;

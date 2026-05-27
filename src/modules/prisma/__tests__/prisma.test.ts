@@ -3,10 +3,10 @@ import {
   cleanupPrismaClients,
   createPrismaClients,
   normalizeIdentifier,
+  type PrismaExtensibleClient,
   resolveQualifiedTableName,
   selectRandomPrismaReader,
   warmUpPrismaClients,
-  type PrismaExtensibleClient,
 } from '../services';
 
 class MockPrismaClient implements PrismaExtensibleClient<string> {

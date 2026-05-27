@@ -1,14 +1,14 @@
+import type { PrismaRetryRuntime } from '../../../modules/prisma-retry/services';
+import type {
+  ExpressRequestLike,
+  ExpressResponseLike,
+} from '../../express/services';
 import {
   buildPrismaClients,
   buildPrismaContextFactory,
   buildPrismaContextMiddleware,
   type PrismaServiceContext,
 } from '../prisma-context';
-import type { PrismaRetryRuntime } from '../../../modules/prisma-retry/services';
-import type {
-  ExpressRequestLike,
-  ExpressResponseLike,
-} from '../../express/services';
 
 const mockPrismaRuntime: PrismaRetryRuntime = {
   defineExtension: <TExtension>(ext: TExtension): TExtension => ext,

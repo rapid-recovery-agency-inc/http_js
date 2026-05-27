@@ -1,13 +1,13 @@
-import { InMemoryCache } from '../cache/in-memory-cache';
 import type { ServiceContext } from '../../shared/context/services';
 import type { ExtractedRequestData } from '../../shared/requests/services';
+import { InMemoryCache } from '../cache/in-memory-cache';
 
 import { RULE_CACHING_EXPIRATION_IN_SECONDS } from './constants';
 import {
-  RateLimitException,
-  type RateLimiterRequestCount,
   type RateLimiterRepositoryLike,
+  type RateLimiterRequestCount,
   type RateLimiterRule,
+  RateLimitException,
 } from './types';
 
 const RULE_CACHE = new InMemoryCache<

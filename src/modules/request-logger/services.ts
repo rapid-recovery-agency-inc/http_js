@@ -4,13 +4,11 @@ import type {
   ContextRequestLike,
   ServiceContext,
 } from '../../shared/context/services';
-import type {
-  ExpressMiddleware,
-  ExpressRequestLike,
-  ExpressResponseLike,
-} from '../../shared/express/services';
 import {
   createContextRequestFromExpress,
+  type ExpressMiddleware,
+  type ExpressRequestLike,
+  type ExpressResponseLike,
   hasExpressHeader,
   normalizeExpressHeaders,
   stringifyExpressBody,

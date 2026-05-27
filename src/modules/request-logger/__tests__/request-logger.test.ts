@@ -4,15 +4,14 @@ import type {
   ExpressRequestLike,
   ExpressResponseLike,
 } from '../../../shared/express/services';
-
 import { DEFAULT_REQUEST_TABLE, REQUEST_LOGGER_HEADER } from '../constants';
 import { PrismaRequestLoggerRepository } from '../repositories';
 import {
   consoleRequestLoggerMiddleware,
   databaseRequestLoggerMiddleware,
 } from '../services';
-import { resolveRequestLoggerTableName, saveRequestLog } from '../utils';
 import type { RequestLoggerPersistenceLike } from '../types';
+import { resolveRequestLoggerTableName, saveRequestLog } from '../utils';
 
 class MockPersistence {
   public readonly saveMock = jest.fn<

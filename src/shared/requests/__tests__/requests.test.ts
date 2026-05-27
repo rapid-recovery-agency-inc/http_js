@@ -1,9 +1,9 @@
 import {
   extractRequestData,
-  validateRequestData,
   type HeadersLike,
   type QueryParamsLike,
   type RequestLike,
+  validateRequestData,
 } from '../services';
 
 class TestHeaders implements HeadersLike {

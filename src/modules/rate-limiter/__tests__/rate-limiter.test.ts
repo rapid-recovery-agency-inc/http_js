@@ -4,11 +4,14 @@ import type {
   ExpressRequestLike,
   ExpressResponseLike,
 } from '../../../shared/express/services';
-
 import { RULE_CACHING_EXPIRATION_IN_SECONDS } from '../constants';
 import { PrismaRateLimiterRepository } from '../repositories';
 import { rateLimiterMiddleware } from '../services';
-import { RateLimitException, type RateLimiterRule } from '../types';
+import {
+  type RateLimiterRepositoryLike,
+  type RateLimiterRule,
+  RateLimitException,
+} from '../types';
 import {
   assertCapacity,
   fetchRateLimiterCount,
@@ -18,7 +21,6 @@ import {
   fetchRateLimiterRule,
   resetRateLimiterCache,
 } from '../utils';
-import type { RateLimiterRepositoryLike } from '../types';
 
 class MockRateLimiterRepository implements RateLimiterRepositoryLike {
   public readonly fetchDailyCountMock = jest.fn<

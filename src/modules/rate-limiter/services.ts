@@ -2,17 +2,17 @@ import type {
   ContextRequestLike,
   ServiceContext,
 } from '../../shared/context/services';
-import type {
-  ExpressMiddleware,
-  ExpressRequestLike,
-  ExpressResponseLike,
+import {
+  createContextRequestFromExpress,
+  type ExpressMiddleware,
+  type ExpressRequestLike,
+  type ExpressResponseLike,
 } from '../../shared/express/services';
-import { createContextRequestFromExpress } from '../../shared/express/services';
 import { createLogger, LogLevel } from '../../shared/logging/services';
 import { extractRequestData } from '../../shared/requests/services';
 
 import { RULE_CACHING_EXPIRATION_IN_SECONDS } from './constants';
-import { RateLimitException, type RateLimiterRepositoryLike } from './types';
+import { type RateLimiterRepositoryLike, RateLimitException } from './types';
 import { assertCapacity } from './utils';
 
 const logger = createLogger('rate-limiter', { logLevel: LogLevel.DEBUG });

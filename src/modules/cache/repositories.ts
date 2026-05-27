@@ -1,9 +1,9 @@
 import { createHash } from 'node:crypto';
 
 import {
-  resolveQualifiedTableName,
   type PrismaQueryableClient,
   type PrismaStatementFactory,
+  resolveQualifiedTableName,
 } from '../prisma/services';
 
 export interface CacheRecord {

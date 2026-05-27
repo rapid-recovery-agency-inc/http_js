@@ -1,11 +1,11 @@
 import {
-  resolveQualifiedTableName,
   type PrismaQueryableClient,
   type PrismaStatementFactory,
+  resolveQualifiedTableName,
 } from '../prisma/services';
 
 import { DEFAULT_REQUEST_TABLE } from './constants';
-import type { RequestLogRecord, RequestLoggerPersistenceLike } from './types';
+import type { RequestLoggerPersistenceLike, RequestLogRecord } from './types';
 import { resolveRequestLoggerTableName } from './utils';
 
 export interface PrismaRequestLoggerRepositoryOptions<TStatement> {

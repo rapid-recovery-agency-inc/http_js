@@ -1,7 +1,7 @@
 import { DEFAULT_EXPIRATION_IN_SECONDS } from './in-memory-cache';
 import {
-  PrismaCacheRepository,
   type CacheRepository,
+  PrismaCacheRepository,
   type PrismaCacheRepositoryOptions,
 } from './repositories';
 import type { AsyncCache } from './types';

@@ -1,8 +1,8 @@
 import type { ExtractedRequestData } from '../../shared/requests/services';
 import {
-  resolveQualifiedTableName,
   type PrismaQueryableClient,
   type PrismaStatementFactory,
+  resolveQualifiedTableName,
 } from '../prisma/services';
 import { DEFAULT_REQUEST_TABLE } from '../request-logger/constants';
 import { resolveRequestLoggerTableName } from '../request-logger/utils';
