@@ -1,6 +1,6 @@
 # Logging
 
-Module-scoped logging backed by Pino with `pino-pretty` formatting. The logger factory returns a lightweight adapter that binds a logger to a module name and forwards calls to the underlying Pino instance.
+The logger factory returns a lightweight adapter that binds a logger to a module name and forwards calls to the underlying Pino instance.
 
 ## Why use it
 
