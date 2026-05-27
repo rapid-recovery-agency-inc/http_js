@@ -1,5 +1,5 @@
 {
-  "name": "http_js",
+  "name": "@rapid-recovery-agency-inc/http_js",
   "version": "0.1.0",
   "description": "TypeScript utilities for HTTP APIs and microservices.",
   "license": "MIT",
@@ -18,8 +18,13 @@
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/",
+    "access": "restricted"
+  },
   "scripts": {
     "precommit": "npm run lint && npm run format-check && npm run type-check && npm run test",
+    "prepublishOnly": "npm run build",
     "prepare": "husky",
     "build": "rm -rf dist && tsc -p tsconfig.json",
     "clean": "rimraf dist",
