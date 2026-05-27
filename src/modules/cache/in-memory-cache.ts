@@ -27,6 +27,10 @@ export class InMemoryCache<TValue = unknown> implements Cache<TValue> {
 
     if (!this.cache.has(key) && this.cache.size >= this.maxSize) {
       this.clean();
+
+      if (this.cache.size >= this.maxSize) {
+        throw new Error('InMemoryCache: cache is full');
+      }
     }
 
     this.cache.set(key, {

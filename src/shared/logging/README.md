@@ -4,7 +4,6 @@ The logger factory returns a lightweight adapter that binds a logger to a module
 
 ## Why use it
 
-- Logs are rendered with `pino-pretty`, which keeps local development output readable.
 - Logger instances are created per call and are bound to a `module` field for easier filtering.
 - Log level comes from the explicit option first, then `LOG_LEVEL`, then `info`.
 - The adapter exposes `warn` for warning-level logs, and `critical` maps to Pino's `fatal` level.

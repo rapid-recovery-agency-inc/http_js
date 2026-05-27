@@ -208,7 +208,9 @@ export function databaseRequestLoggerMiddleware(
             requestUuid,
           },
           tablePrefix,
-        );
+        ).catch((error) => {
+          logger.error(`Failed to save request log: ${String(error)}`);
+        });
       },
     );
 

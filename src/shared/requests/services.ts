@@ -111,7 +111,7 @@ export async function extractRequestData(
 
   let productFields = createEmptyProductFields();
 
-  if (request.method === 'POST') {
+  if (request.method.toUpperCase() === 'POST') {
     try {
       productFields = extractProductFieldsFromBody(requestBody);
     } catch (error) {
@@ -121,7 +121,7 @@ export async function extractRequestData(
       );
       throw error;
     }
-  } else if (request.method === 'GET') {
+  } else if (request.method.toUpperCase() === 'GET') {
     productFields = extractProductFieldsFromQuery(request.queryParams);
   }
 

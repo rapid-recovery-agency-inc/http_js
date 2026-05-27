@@ -42,6 +42,10 @@ function requireRateLimiterArgs(args: ExtractedRequestData): {
   };
 }
 
+function resolveCacheScopeKey(tablePrefix: string | null): string {
+  return tablePrefix ?? 'default';
+}
+
 function getUtcBoundaries(now = new Date()) {
   const year = now.getUTCFullYear();
   const month = now.getUTCMonth();
@@ -66,7 +70,7 @@ export async function fetchRateLimiterRule(
   tablePrefix: string | null = null,
 ): Promise<RateLimiterRule | null> {
   const required = requireRateLimiterArgs(args);
-  const cacheKey = `rule:${required.path}:${required.productName}`;
+  const cacheKey = `rule:${resolveCacheScopeKey(tablePrefix)}:${required.path}:${required.productName}`;
   const cached = RULE_CACHE.get(cacheKey);
   if (cached !== null) {
     return cached as RateLimiterRule;
@@ -142,7 +146,7 @@ export async function fetchRateLimiterCount(
   tablePrefix: string | null = null,
 ): Promise<RateLimiterRequestCount> {
   const required = requireRateLimiterArgs(args);
-  const cacheKey = `count:${required.path}:${required.productName}`;
+  const cacheKey = `count:${resolveCacheScopeKey(tablePrefix)}:${required.path}:${required.productName}`;
   const cached = RULE_CACHE.get(cacheKey);
   if (cached !== null) {
     return cached as RateLimiterRequestCount;

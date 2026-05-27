@@ -53,7 +53,14 @@ class PinoLoggerAdapter implements Logger {
 
   private log(method: LogMethod, value: unknown, ...args: unknown[]): void {
     if (typeof value === 'string') {
-      method(args, value);
+      const [context, ...rest] = args;
+
+      if (context !== undefined) {
+        method(context, value, ...rest);
+        return;
+      }
+
+      method(value);
       return;
     }
 

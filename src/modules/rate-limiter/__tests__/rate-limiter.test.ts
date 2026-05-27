@@ -223,6 +223,78 @@ describe('rate limiter', () => {
     });
   });
 
+  it('does not reuse cached rules across table prefixes', async () => {
+    const repository = new MockRateLimiterRepository();
+    repository.fetchRuleMock
+      .mockResolvedValueOnce({
+        path: '/notifications',
+        productName: 'api',
+        dailyLimit: 100,
+        monthlyLimit: 1000,
+        hourlyLimit: 10,
+      })
+      .mockResolvedValueOnce({
+        path: '/notifications',
+        productName: 'api',
+        dailyLimit: 200,
+        monthlyLimit: 2000,
+        hourlyLimit: 20,
+      });
+    const ctx: ServiceContext<
+      RateLimiterRepositoryLike,
+      RateLimiterRepositoryLike
+    > = {
+      writer: repository,
+      reader: repository,
+    };
+    const args = {
+      path: '/notifications',
+      requestHeaders: '{}',
+      requestBody: '{}',
+      productName: 'api',
+      productModule: 'notifications',
+      productFeature: 'send',
+      productTenant: 'tenant-a',
+    };
+
+    await expect(
+      fetchRateLimiterRule(args, ctx, undefined, 'service_a'),
+    ).resolves.toEqual({
+      path: '/notifications',
+      productName: 'api',
+      dailyLimit: 100,
+      monthlyLimit: 1000,
+      hourlyLimit: 10,
+    });
+    await expect(
+      fetchRateLimiterRule(args, ctx, undefined, 'service_b'),
+    ).resolves.toEqual({
+      path: '/notifications',
+      productName: 'api',
+      dailyLimit: 200,
+      monthlyLimit: 2000,
+      hourlyLimit: 20,
+    });
+
+    expect(repository.fetchRuleMock).toHaveBeenCalledTimes(2);
+    expect(repository.fetchRuleMock).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        path: '/notifications',
+        productName: 'api',
+      }),
+      'service_a',
+    );
+    expect(repository.fetchRuleMock).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        path: '/notifications',
+        productName: 'api',
+      }),
+      'service_b',
+    );
+  });
+
   it('fetches monthly, daily, and hourly counts', async () => {
     const repository = new MockRateLimiterRepository();
     repository.fetchMonthlyCountMock.mockResolvedValueOnce(30);
@@ -283,6 +355,76 @@ describe('rate limiter', () => {
       dailyCount: 12,
       hourlyCount: 2,
     });
+  });
+
+  it('does not reuse cached aggregate counts across table prefixes', async () => {
+    const repository = new MockRateLimiterRepository();
+    repository.fetchMonthlyCountMock
+      .mockResolvedValueOnce(30)
+      .mockResolvedValueOnce(60);
+    repository.fetchDailyCountMock
+      .mockResolvedValueOnce(12)
+      .mockResolvedValueOnce(24);
+    repository.fetchHourlyCountMock
+      .mockResolvedValueOnce(2)
+      .mockResolvedValueOnce(4);
+    const ctx: ServiceContext<
+      RateLimiterRepositoryLike,
+      RateLimiterRepositoryLike
+    > = {
+      writer: repository,
+      reader: repository,
+    };
+    const args = {
+      path: '/notifications',
+      requestHeaders: '{}',
+      requestBody: '{}',
+      productName: 'api',
+      productModule: 'notifications',
+      productFeature: 'send',
+      productTenant: 'tenant-a',
+    };
+
+    await expect(
+      fetchRateLimiterCount(args, ctx, undefined, 'service_a'),
+    ).resolves.toEqual({
+      path: '/notifications',
+      productName: 'api',
+      monthlyCount: 30,
+      dailyCount: 12,
+      hourlyCount: 2,
+    });
+    await expect(
+      fetchRateLimiterCount(args, ctx, undefined, 'service_b'),
+    ).resolves.toEqual({
+      path: '/notifications',
+      productName: 'api',
+      monthlyCount: 60,
+      dailyCount: 24,
+      hourlyCount: 4,
+    });
+
+    expect(repository.fetchMonthlyCountMock).toHaveBeenCalledTimes(2);
+    expect(repository.fetchDailyCountMock).toHaveBeenCalledTimes(2);
+    expect(repository.fetchHourlyCountMock).toHaveBeenCalledTimes(2);
+    expect(repository.fetchMonthlyCountMock).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        path: '/notifications',
+        productName: 'api',
+      }),
+      expect.any(String),
+      'service_a',
+    );
+    expect(repository.fetchMonthlyCountMock).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        path: '/notifications',
+        productName: 'api',
+      }),
+      expect.any(String),
+      'service_b',
+    );
   });
 
   it('throws when limits are exceeded', async () => {

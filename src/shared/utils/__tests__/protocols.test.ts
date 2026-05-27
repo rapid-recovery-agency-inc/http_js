@@ -35,7 +35,7 @@ describe('utils protocols', () => {
     expect(toBooleanString(1)).toBe('true');
     expect(toBooleanString('false')).toBe('false');
     expect(() => toBooleanString('maybe')).toThrow(
-      'Expected bool, int, or str, got string',
+      'Expected boolean, number, string, got string',
     );
   });
 });

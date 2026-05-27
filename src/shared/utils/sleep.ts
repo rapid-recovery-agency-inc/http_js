@@ -1,5 +1,5 @@
-export const msleep = async (miliSeconds: number): Promise<void> => {
-  await new Promise((resolve) => setTimeout(resolve, miliSeconds));
+export const msleep = async (milliSeconds: number): Promise<void> => {
+  await new Promise((resolve) => setTimeout(resolve, milliSeconds));
 };
 
 export const sleep = async (

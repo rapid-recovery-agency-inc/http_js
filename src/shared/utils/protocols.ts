@@ -87,5 +87,5 @@ export function toBooleanString(
     return 'false';
   }
 
-  throw new Error(`Expected bool, int, or str, got ${typeof value}`);
+  throw new Error(`Expected boolean, number, string, got ${typeof value}`);
 }

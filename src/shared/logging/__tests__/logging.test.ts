@@ -99,13 +99,13 @@ describe('logging', () => {
     logger.critical('critical message');
 
     expect(childLogger.debug).toHaveBeenCalledWith(
-      [{ requestId: 'req-1' }],
+      { requestId: 'req-1' },
       'debug message',
     );
-    expect(childLogger.info).toHaveBeenCalledWith([], 'info message');
-    expect(childLogger.warn).toHaveBeenCalledWith(['extra'], 'warn message');
-    expect(childLogger.error).toHaveBeenCalledWith([], 'error message');
-    expect(childLogger.fatal).toHaveBeenCalledWith([], 'critical message');
+    expect(childLogger.info).toHaveBeenCalledWith('info message');
+    expect(childLogger.warn).toHaveBeenCalledWith('extra', 'warn message');
+    expect(childLogger.error).toHaveBeenCalledWith('error message');
+    expect(childLogger.fatal).toHaveBeenCalledWith('critical message');
   });
 
   it('creates a plain pino logger configuration', () => {
