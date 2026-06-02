@@ -1,5 +1,7 @@
-import pino, { type Logger as PinoLogger } from 'pino';
-import pinoHttp from 'pino-http';
+import { IncomingMessage, ServerResponse } from 'http';
+import morgan from 'morgan';
+import winston from 'winston';
+import * as Transport from 'winston-transport';
 
 import { type ExpressMiddleware } from '../express/services';
 
@@ -13,107 +15,72 @@ export enum LogLevel {
   CRITICAL = 'fatal',
 }
 
-export type LoggerOptions = {
-  logLevel?: LogLevel;
+const logCache = new Map<string, winston.Logger>();
+
+const HIGHEST_LOG_LEVEL = process.env.LOG_LEVEL ?? 'debug';
+
+const createLogTransports = (
+  streamName: string,
+  logInJSON = true,
+): Transport[] => {
+  const transports: Transport[] = [];
+
+  const labelFormat = winston.format.label({ label: streamName });
+  const logFormat = logInJSON
+    ? winston.format.combine(
+        winston.format.timestamp(),
+        labelFormat,
+        winston.format.json({ space: 2 }),
+      )
+    : winston.format.combine(
+        winston.format.timestamp(),
+        labelFormat,
+        winston.format.simple(),
+      );
+
+  transports.push(
+    new winston.transports.Console({
+      level: HIGHEST_LOG_LEVEL,
+      format: logFormat,
+    }),
+  );
+
+  return transports;
 };
-
-export interface Logger {
-  debug(message: string, ...args: unknown[]): void;
-  debug(value: unknown, message?: string, ...args: unknown[]): void;
-
-  info(message: string, ...args: unknown[]): void;
-  info(value: unknown, message?: string, ...args: unknown[]): void;
-
-  warn(message: string, ...args: unknown[]): void;
-  warn(value: unknown, message?: string, ...args: unknown[]): void;
-
-  error(message: string, ...args: unknown[]): void;
-  error(value: unknown, message?: string, ...args: unknown[]): void;
-
-  critical(message: string, ...args: unknown[]): void;
-  critical(value: unknown, message?: string, ...args: unknown[]): void;
-}
-
-type LogMethod = (
-  object: unknown,
-  message?: string,
-  ...args: unknown[]
-) => void;
-
-class PinoLoggerAdapter implements Logger {
-  private readonly logger: PinoLogger;
-
-  public constructor(logger: PinoLogger) {
-    this.logger = logger;
-  }
-
-  public toPinoLogger(): PinoLogger {
-    return this.logger;
-  }
-
-  private log(method: LogMethod, value: unknown, ...args: unknown[]): void {
-    if (typeof value === 'string') {
-      const [context, ...rest] = args;
-
-      if (context !== undefined) {
-        method(context, value, ...rest);
-        return;
-      }
-
-      method(value);
-      return;
-    }
-
-    const [message, ...rest] = args;
-
-    if (typeof message === 'string') {
-      method(value, message, ...rest);
-      return;
-    }
-
-    method(value);
-  }
-
-  public debug(value: string | object | Error, ...args: unknown[]): void {
-    this.log(this.logger.debug.bind(this.logger), value, ...args);
-  }
-
-  public info(value: string | object | Error, ...args: unknown[]): void {
-    this.log(this.logger.info.bind(this.logger), value, ...args);
-  }
-
-  public warn(value: string | object | Error, ...args: unknown[]): void {
-    this.log(this.logger.warn.bind(this.logger), value, ...args);
-  }
-
-  public error(value: string | object | Error, ...args: unknown[]): void {
-    this.log(this.logger.error.bind(this.logger), value, ...args);
-  }
-
-  public critical(value: string | object | Error, ...args: unknown[]): void {
-    this.log(this.logger.fatal.bind(this.logger), value, ...args);
-  }
-}
 
 export const createLogger = (
-  moduleName: string,
-  options?: LoggerOptions,
-): Logger => {
-  const logger = pino({
-    level: options?.logLevel ?? process.env.LOG_LEVEL ?? LogLevel.INFO,
-  }).child({
-    module: moduleName,
+  streamName: string,
+  logInJSON = true,
+): winston.Logger => {
+  const cachedLogger = logCache.get(streamName);
+  if (cachedLogger) return cachedLogger;
+
+  const logger = winston.createLogger({
+    level: HIGHEST_LOG_LEVEL,
+    transports: createLogTransports(streamName, logInJSON),
   });
 
-  return new PinoLoggerAdapter(logger);
+  logCache.set(streamName, logger);
+  return logger;
 };
 
-export const loggerMiddleware = (logger: Logger): ExpressMiddleware => {
-  if (!(logger instanceof PinoLoggerAdapter)) {
-    throw new Error('Unsupported logger implementation');
-  }
+export const loggerMiddleware = (logger: winston.Logger): ExpressMiddleware => {
+  const middleware = morgan(
+    ':method :url :status :res[content-length] - :response-time ms',
+    {
+      stream: {
+        write(message: string): void {
+          logger.info(message.trim());
+        },
+      },
+    },
+  );
 
-  return pinoHttp({
-    logger: logger.toPinoLogger(),
-  });
+  return (req, res, next): void => {
+    middleware(
+      req as unknown as IncomingMessage,
+      res as unknown as ServerResponse,
+      next,
+    );
+  };
 };

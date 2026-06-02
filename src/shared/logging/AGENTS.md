@@ -2,32 +2,37 @@
 
 ## Purpose
 
-This module provides the package logging primitives. It exposes a Pino-backed logger factory, log-level handling, and a lightweight adapter for module-scoped logging with pretty console output. It is a first-class library feature consumed directly by application code and by other modules.
+This module provides shared logging primitives. It exposes a Winston-based logger factory, log-level handling via `LOG_LEVEL`, and a Morgan adapter for request logging. It is a cross-cutting infrastructure primitive used by shared and module code.
 
 ## Architecture
 
 ```text
 consumer
   -> createLogger()
-	  -> Pino logger child bound to module name
-		  -> pino-pretty transport
+	  -> Winston logger bound to stream label
+		  -> Console transport
+
+consumer
+  -> loggerMiddleware(logger)
+	  -> Morgan HTTP formatter
+		  -> logger.info(message)
 ```
 
 ## File Structure
 
-| File                | Role                                                   |
-| ------------------- | ------------------------------------------------------ |
-| `../../../index.ts` | Root package export surface for this module            |
-| `services.ts`       | Pino adapter, logger interface, and log-level handling |
-| `logging.test.ts`   | Module tests                                           |
+| File                        | Role                                                |
+| --------------------------- | --------------------------------------------------- |
+| `../../../index.ts`         | Root package export surface for this module         |
+| `services.ts`               | Winston logger factory and Morgan middleware bridge |
+| `__tests__/logging.test.ts` | Logging unit tests                                  |
 
 ## Key Responsibilities
 
-- Create module-scoped logger instances with a `module` field.
-- Handle log-level selection from options or `LOG_LEVEL`.
-- Emit readable pretty logs through Pino's transport layer.
-- Expose `warn` as the warning-level method and `critical` as the fatal-level method.
-- Act as the common logging dependency for both modules and shared infrastructure.
+- Create stream-scoped Winston logger instances with a `label` field.
+- Cache loggers by stream name for reuse.
+- Handle log-level selection from `LOG_LEVEL` with `debug` fallback.
+- Emit JSON or simple line logs through Winston console transport.
+- Bridge Morgan request logs into `logger.info`.
 
 ## Dependencies
 
@@ -39,4 +44,4 @@ consumer
 
 - Public exports: [../../../index.ts](../../../index.ts)
 - Main implementation: [services.ts](services.ts)
-- Tests: [logging.test.ts](logging.test.ts)
+- Tests: [**tests**/logging.test.ts](__tests__/logging.test.ts)

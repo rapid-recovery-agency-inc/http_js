@@ -8,14 +8,14 @@ import {
   type ExpressRequestLike,
   type ExpressResponseLike,
 } from '../../shared/express/services';
-import { createLogger, LogLevel } from '../../shared/logging/services';
+import { createLogger } from '../../shared/logging/services';
 import { extractRequestData } from '../../shared/requests/services';
 
 import { RULE_CACHING_EXPIRATION_IN_SECONDS } from './constants';
 import { type RateLimiterRepositoryLike, RateLimitException } from './types';
 import { assertCapacity } from './utils';
 
-const logger = createLogger('rate-limiter', { logLevel: LogLevel.DEBUG });
+const logger = createLogger('rate-limiter');
 
 export function rateLimiterMiddleware(
   pathWhitelist: string[],

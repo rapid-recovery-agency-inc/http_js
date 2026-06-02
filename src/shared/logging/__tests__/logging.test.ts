@@ -1,120 +1,82 @@
-jest.mock('pino', () => ({
-  __esModule: true,
-  default: jest.fn(),
-}));
+import winston from 'winston';
 
-jest.mock('pino-http', () => ({
-  __esModule: true,
-  default: jest.fn(),
-}));
+import { createLogger } from '../services';
 
-import pino from 'pino';
+const messageSymbol = Symbol.for('message');
 
-import { createLogger, LogLevel } from '../services';
+function getFormattedMessage(logger: winston.Logger, message: string): string {
+  const [transport] = logger.transports;
 
-const mockedPino = jest.mocked(pino);
-
-const childLogger = {
-  debug: jest.fn(),
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-  fatal: jest.fn(),
-};
-
-const child = jest.fn(() => childLogger);
-
-function setLogLevel(value: string | undefined): void {
-  if (value === undefined) {
-    delete process.env.LOG_LEVEL;
-    return;
+  if (!transport || !(transport instanceof winston.transports.Console)) {
+    throw new Error('expected logger to use a winston console transport');
   }
 
-  process.env.LOG_LEVEL = value;
+  if (!transport.format) {
+    throw new Error('expected logger transport to have a format');
+  }
+
+  const transformed = transport.format.transform(
+    {
+      level: 'info',
+      message,
+    },
+    transport.format.options ?? {},
+  );
+
+  if (!transformed || typeof transformed !== 'object') {
+    throw new Error('expected transformed log info to be an object');
+  }
+
+  const formattedMessage = Reflect.get(transformed, messageSymbol);
+  if (typeof formattedMessage !== 'string') {
+    throw new Error('expected formatted message to be a string');
+  }
+
+  return formattedMessage;
 }
 
 describe('logging', () => {
-  const originalLogLevel = process.env.LOG_LEVEL;
+  it('creates a logger with a console transport and configured level', () => {
+    const logger = createLogger('logging-level-test');
+    const [transport] = logger.transports;
 
-  beforeEach(() => {
-    jest.resetAllMocks();
-    setLogLevel(originalLogLevel);
-    child.mockImplementation(() => childLogger);
-    mockedPino.mockImplementation(
-      () =>
-        ({
-          child,
-        }) as never,
-    );
+    expect(transport).toBeInstanceOf(winston.transports.Console);
+    expect(transport?.level).toBe(process.env.LOG_LEVEL ?? 'debug');
+    expect(logger.level).toBe(process.env.LOG_LEVEL ?? 'debug');
   });
 
-  afterEach(() => {
-    setLogLevel(originalLogLevel);
+  it('reuses cached loggers by stream name', () => {
+    const logger = createLogger('shared-stream-name', true);
+    const sameLogger = createLogger('shared-stream-name', false);
+
+    expect(sameLogger).toBe(logger);
   });
 
-  it('creates a child logger bound to the module name', () => {
-    createLogger('service-a');
+  it('formats output as json when json logging is enabled', () => {
+    const streamName = `json-stream-${Date.now()}`;
+    const logger = createLogger(streamName, true);
+    const formattedMessage = getFormattedMessage(logger, 'json-message');
 
-    expect(mockedPino).toHaveBeenCalledWith(
-      expect.objectContaining({
-        level: LogLevel.INFO,
-      }),
-    );
-    expect(child).toHaveBeenCalledWith({
-      module: 'service-a',
-    });
+    const parsedMessage = JSON.parse(formattedMessage) as {
+      label?: string;
+      level?: string;
+      message?: string;
+      timestamp?: string;
+    };
+
+    expect(parsedMessage.message).toBe('json-message');
+    expect(parsedMessage.level).toBe('info');
+    expect(parsedMessage.label).toBe(streamName);
+    expect(parsedMessage.timestamp).toEqual(expect.any(String));
   });
 
-  it('uses an explicit log level over the environment', () => {
-    setLogLevel(LogLevel.ERROR);
+  it('formats output as a simple line when json logging is disabled', () => {
+    const streamName = `simple-stream-${Date.now()}`;
+    const logger = createLogger(streamName, false);
+    const formattedMessage = getFormattedMessage(logger, 'simple-message');
 
-    createLogger('service-b', { logLevel: LogLevel.DEBUG });
-
-    expect(mockedPino).toHaveBeenCalledWith(
-      expect.objectContaining({
-        level: LogLevel.DEBUG,
-      }),
-    );
-  });
-
-  it('uses LOG_LEVEL when no explicit level is provided', () => {
-    setLogLevel(LogLevel.WARNING);
-
-    createLogger('service-c');
-
-    expect(mockedPino).toHaveBeenCalledWith(
-      expect.objectContaining({
-        level: LogLevel.WARNING,
-      }),
-    );
-  });
-
-  it('forwards log calls to the underlying Pino logger', () => {
-    const logger = createLogger('service-d', { logLevel: LogLevel.DEBUG });
-
-    logger.debug('debug message', { requestId: 'req-1' });
-    logger.info('info message');
-    logger.warn('warn message', 'extra');
-    logger.error('error message');
-    logger.critical('critical message');
-
-    expect(childLogger.debug).toHaveBeenCalledWith(
-      { requestId: 'req-1' },
-      'debug message',
-    );
-    expect(childLogger.info).toHaveBeenCalledWith('info message');
-    expect(childLogger.warn).toHaveBeenCalledWith('extra', 'warn message');
-    expect(childLogger.error).toHaveBeenCalledWith('error message');
-    expect(childLogger.fatal).toHaveBeenCalledWith('critical message');
-  });
-
-  it('creates a plain pino logger configuration', () => {
-    createLogger('service-e');
-
-    expect(mockedPino).toHaveBeenCalledWith(
-      expect.not.objectContaining({
-        transport: expect.anything(),
-      }),
-    );
+    expect(formattedMessage).toContain('info: simple-message');
+    expect(formattedMessage).toContain(`"label":"${streamName}"`);
+    expect(formattedMessage).toContain('"timestamp":"');
   });
 });

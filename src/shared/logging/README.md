@@ -1,24 +1,23 @@
 # Logging
 
-The logger factory returns a lightweight adapter that binds a logger to a module name and forwards calls to the underlying Pino instance.
+The logger factory returns a Winston logger scoped to a stream name, with optional JSON output and a Morgan middleware adapter for request logs.
 
 ## Why use it
 
-- Logger instances are created per call and are bound to a `module` field for easier filtering.
-- Log level comes from the explicit option first, then `LOG_LEVEL`, then `info`.
-- The adapter exposes `warn` for warning-level logs, and `critical` maps to Pino's `fatal` level.
+- Logger instances are created with a stream `label` field for easier filtering.
+- Logger instances are cached by stream name, so repeated calls with the same stream return the same logger instance.
+- Log level comes from `LOG_LEVEL`, falling back to `debug`.
+- `createLogger(streamName, true)` emits JSON logs, while `createLogger(streamName, false)` emits simple line logs.
 
 ## Creating a logger
 
 ```typescript
-import { createLogger, LogLevel } from 'http_js';
+import { createLogger } from 'http_js';
 
 const logger = createLogger('my-service');
 
-// Or pin the level explicitly:
-const verboseLogger = createLogger('my-service', {
-  logLevel: LogLevel.DEBUG,
-});
+// Or switch to simple line output:
+const textLogger = createLogger('my-service-text', false);
 ```
 
 ## Logging messages
@@ -28,21 +27,25 @@ logger.debug('Starting up');
 logger.info('Request received');
 logger.warn('Slow query');
 logger.error('Database error');
-logger.critical('Out of memory');
 ```
 
-Pino writes pretty-formatted log lines such as:
+Winston emits JSON log lines by default:
 
 ```text
-[2026-05-25 10:00:00.000 +0000] INFO (12345): Request received
-    module: "my-service"
+{
+    "level": "info",
+    "message": "Request received",
+    "timestamp": "2026-06-02T00:00:00.000Z",
+    "label": "my-service"
+}
 ```
 
 ## API
 
-| Export         | Description                                           |
-| -------------- | ----------------------------------------------------- |
-| `createLogger` | Returns a module-bound logger adapter backed by Pino  |
-| `LogLevel`     | Enum: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` |
+| Export             | Description                                              |
+| ------------------ | -------------------------------------------------------- |
+| `createLogger`     | Returns a Winston logger with stream label formatting    |
+| `LogLevel`         | Enum: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`    |
+| `loggerMiddleware` | Creates a Morgan middleware that writes to `logger.info` |
 
-The returned logger supports `debug`, `info`, `warn`, `error`, and `critical`.
+The returned logger is a standard Winston logger and supports `debug`, `info`, `warn`, and `error`.

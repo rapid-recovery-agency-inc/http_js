@@ -38,13 +38,15 @@
   },
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.934.0",
+    "morgan": "^1.10.1",
     "pg": "^8.16.3",
-    "pino": "^10.3.1",
-    "pino-http": "^11.0.0"
+    "winston": "^3.19.0",
+    "winston-transport": "^4.9.0"
   },
   "devDependencies": {
     "@rapid-recovery-agency-inc/eslint-plugin-rra": "^0.22.0",
     "@types/jest": "^30.0.0",
+    "@types/morgan": "^1.9.10",
     "@types/node": "^24.10.1",
     "@types/pg": "^8.15.5",
     "@typescript-eslint/eslint-plugin": "^8.47.0",
@@ -62,7 +64,6 @@
     "typescript": "^5.9.3"
   },
   "peerDependencies": {
-    "pino": "^10.3.1",
-    "pino-http": "^11.0.0"
+    "morgan": "^1.10.1"
   }
 }

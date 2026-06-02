@@ -1,6 +1,6 @@
-import { createLogger, LogLevel } from '../../shared/logging/services';
+import { createLogger } from '../../shared/logging/services';
 
-const logger = createLogger('prisma', { logLevel: LogLevel.DEBUG });
+const logger = createLogger('prisma');
 
 const IDENTIFIER_RE = /^[A-Za-z_][A-Za-z0-9_]*$/u;
 

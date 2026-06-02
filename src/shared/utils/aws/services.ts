@@ -3,14 +3,14 @@ import {
   SecretsManagerClient,
 } from '@aws-sdk/client-secrets-manager';
 
-import { createLogger, LogLevel } from '../../logging/services';
+import { createLogger } from '../../logging/services';
 
 export interface AWSEnvironment {
   AWS_REGION: string;
   ENVIRONMENT_SECRET_NAME: string;
 }
 
-const logger = createLogger('aws', { logLevel: LogLevel.DEBUG });
+const logger = createLogger('aws');
 
 function sortSecretsByTimestamp(
   secrets: Record<string, string>,

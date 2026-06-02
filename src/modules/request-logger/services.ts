@@ -13,7 +13,7 @@ import {
   normalizeExpressHeaders,
   stringifyExpressBody,
 } from '../../shared/express/services';
-import { createLogger, LogLevel } from '../../shared/logging/services';
+import { createLogger } from '../../shared/logging/services';
 import {
   extractRequestData,
   validateRequestData,
@@ -29,7 +29,7 @@ import type {
 } from './types';
 import { saveRequestLog } from './utils';
 
-const logger = createLogger('request-logger', { logLevel: LogLevel.DEBUG });
+const logger = createLogger('request-logger');
 
 function applyOverride(
   requestData: Awaited<ReturnType<typeof extractRequestData>>,

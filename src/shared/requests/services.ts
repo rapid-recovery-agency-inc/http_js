@@ -1,6 +1,6 @@
-import { createLogger, LogLevel } from '../logging/services';
+import { createLogger } from '../logging/services';
 
-const logger = createLogger('requests', { logLevel: LogLevel.DEBUG });
+const logger = createLogger('requests');
 
 const PRODUCT_FIELDS = [
   'product_name',
