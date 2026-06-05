@@ -26,7 +26,7 @@ Prisma runtime + retry options
 
 ## Key Responsibilities
 
-- Build a Prisma extension that wraps all operations with retry behavior.
+- Build a Prisma extension that wraps all operations (`$allModels.$allOperations` for model queries, `$allOperations` for raw queries) with retry behavior.
 - Detect transient Prisma and network-style failures that are safe to retry.
 - Apply exponential backoff with configurable jitter.
 - Support optional per-operation timeouts.
@@ -38,6 +38,21 @@ Prisma runtime + retry options
 - Shared sleep utility: [../../shared/utils](../../shared/utils)
 - Parent guide: [../../../AGENTS.md](../../../AGENTS.md)
 - Root README: [../../../README.md](../../../README.md)
+
+## Consumer Integration
+
+This module does not depend on `@prisma/client`. Consumers pass their own Prisma runtime via the `PrismaRetryRuntime` interface:
+
+```ts
+import { Prisma } from '@prisma/client';
+import { prismaRetryExtension } from '@rapid-recovery-agency-inc/http_js';
+
+const extension = prismaRetryExtension(Prisma, { maxAttempts: 3 });
+const client = new PrismaClient().$extends(extension);
+```
+
+- **CJS consumers** (NestJS + webpack): use `require('@rapid-recovery-agency-inc/http_js')`. The package's dual ESM/CJS build provides a `require`-compatible entry point — no special webpack `conditionNames` or externals configuration is needed.
+- **ESM consumers**: use `import { prismaRetryExtension } from '@rapid-recovery-agency-inc/http_js'`.
 
 ## Navigation
 

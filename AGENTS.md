@@ -76,6 +76,20 @@ The design intent is:
 - Keep timeout-style helpers in `src/shared/utils/async`.
 - Prefer colocated tests inside the owning folder.
 
+## Build Output
+
+The `build` script produces dual output:
+
+| Output           | Module format | Directory   | Config              |
+| ---------------- | ------------- | ----------- | ------------------- |
+| ESM (primary)    | ES modules    | `dist/`     | `tsconfig.json`     |
+| CJS (compatible) | CommonJS      | `dist/cjs/` | `tsconfig.cjs.json` |
+
+- Both builds compile from the same `src/` source.
+- The CJS output includes a `dist/cjs/package.json` with `{"type":"commonjs"}` so Node.js loads `.js` files under that tree as CommonJS regardless of the root `"type":"module"`.
+- The `package.json` `exports` field maps `import` → `dist/index.js` and `require` → `dist/cjs/index.js`.
+- Consumers using CJS (e.g. NestJS apps bundled with webpack) should use `require('@rapid-recovery-agency-inc/http_js')` — no special webpack `conditionNames` or externals wrappers are needed.
+
 ## Validation
 
 - `npm run lint`

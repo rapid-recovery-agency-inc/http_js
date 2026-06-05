@@ -39,6 +39,28 @@ runtime schema/table names
 - Parent guide: [../../../AGENTS.md](../../../AGENTS.md)
 - Root README: [../../../README.md](../../../README.md)
 
+## Consumer Integration
+
+This module is schema-agnostic and does not depend on `@prisma/client`. Consumers provide their own client factory and URLs:
+
+```ts
+import { PrismaClient } from '@prisma/client';
+import {
+  createPrismaClients,
+  warmUpPrismaClients,
+} from '@rapid-recovery-agency-inc/http_js';
+
+const clients = createPrismaClients({
+  createClient: (url) => new PrismaClient({ datasourceUrl: url }),
+  writerUrl: process.env.DATABASE_URL,
+  readerUrls: [process.env.READER_URL],
+});
+await warmUpPrismaClients(clients);
+```
+
+- **CJS consumers** (NestJS + webpack): use `require('@rapid-recovery-agency-inc/http_js')`. The dual ESM/CJS build provides a `require`-compatible entry point.
+- **ESM consumers**: use `import { ... } from '@rapid-recovery-agency-inc/http_js'`.
+
 ## Navigation
 
 - Public exports: [../../../index.ts](../../../index.ts)
