@@ -159,8 +159,8 @@ describe('logging', () => {
         message: 'fail',
       });
       // The Error occupies position 0 in mergeMeta (→ top-level error),
-      // so the additional meta is at position 1 → args['2']
-      expect((entry as any).args['2']).toEqual({ context: 'test' });
+      // so the additional meta is at position 1 → args['1']
+      expect((entry as any).args['1']).toEqual({ context: 'test' });
     });
   });
 

@@ -72,6 +72,7 @@ const mergeMeta = (...meta: unknown[]): Record<string, unknown> | undefined => {
   if (meta.length === 0) return undefined;
 
   const result: Record<string, any> = {};
+  let argIndex = 1;
   for (let i = 0; i < meta.length; i++) {
     const arg = meta[i];
 
@@ -81,7 +82,8 @@ const mergeMeta = (...meta: unknown[]): Record<string, unknown> | undefined => {
       if (!result.args) {
         result.args = {};
       }
-      result.args[`${i + 1}`] = arg;
+      result.args[argIndex] = arg;
+      argIndex++;
     }
   }
   return result;
