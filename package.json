@@ -12,7 +12,8 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/cjs/index.js"
     }
   },
   "files": [
@@ -26,7 +27,7 @@
     "precommit": "npm run lint && npm run format-check && npm run type-check && npm run test",
     "prepublishOnly": "npm run build",
     "prepare": "husky",
-    "build": "rm -rf dist && tsc -p tsconfig.json",
+    "build": "rm -rf dist && tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
     "clean": "rimraf dist",
     "format": "prettier --write \"{src,examples}/**/*.{ts,js,json,md}\" README.md",
     "format-check": "prettier --check \"{src,examples}/**/*.{ts,js,json,md}\" README.md",
