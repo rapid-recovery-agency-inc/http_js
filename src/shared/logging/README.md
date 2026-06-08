@@ -1,9 +1,10 @@
 # Logging
 
-The logger factory returns a Winston logger scoped to a stream name, with optional JSON output and a Morgan middleware adapter for request logs.
+The logger factory returns a `Logger` instance scoped to a stream name, with optional JSON output and a Morgan middleware adapter for request logs.
 
 ## Why use it
 
+- Returns a clean `Logger` interface — the underlying implementation (Winston) is not exposed to consumers.
 - Logger instances are created with a stream `label` field for easier filtering.
 - Logger instances are cached by stream name, so repeated calls with the same stream return the same logger instance.
 - Log level comes from `LOG_LEVEL`, falling back to `debug`.
@@ -12,9 +13,9 @@ The logger factory returns a Winston logger scoped to a stream name, with option
 ## Creating a logger
 
 ```typescript
-import { createLogger } from 'http_js';
+import { createLogger, type Logger } from 'http_js';
 
-const logger = createLogger('my-service');
+const logger: Logger = createLogger('my-service');
 
 // Or switch to simple line output:
 const textLogger = createLogger('my-service-text', false);
@@ -29,7 +30,7 @@ logger.warn('Slow query');
 logger.error('Database error');
 ```
 
-Winston emits JSON log lines by default:
+The default output is JSON:
 
 ```text
 {
@@ -44,8 +45,9 @@ Winston emits JSON log lines by default:
 
 | Export             | Description                                              |
 | ------------------ | -------------------------------------------------------- |
-| `createLogger`     | Returns a Winston logger with stream label formatting    |
+| `createLogger`     | Returns a `Logger` with stream label formatting          |
+| `Logger`           | Interface: `debug`, `info`, `warn`, `error` methods      |
 | `LogLevel`         | Enum: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`    |
 | `loggerMiddleware` | Creates a Morgan middleware that writes to `logger.info` |
 
-The returned logger is a standard Winston logger and supports `debug`, `info`, `warn`, and `error`.
+The returned `Logger` exposes the standard `debug`, `info`, `warn`, and `error` methods, each accepting a message string and optional metadata arguments.
