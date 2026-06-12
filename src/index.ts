@@ -137,6 +137,7 @@ export {
   LogLevel,
   createLogger,
   loggerMiddleware,
+  type Logger,
 } from './shared/logging/services';
 
 export {
