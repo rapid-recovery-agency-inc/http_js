@@ -30,14 +30,15 @@ The design intent is:
 
 ### Feature Modules
 
-| Path                         | Role                                                         |
-| ---------------------------- | ------------------------------------------------------------ |
-| `src/modules/cache`          | Cache interfaces and cache backend implementations           |
-| `src/modules/hmac`           | HMAC signing, signature verification, and Express middleware |
-| `src/modules/prisma`         | Schema-agnostic Prisma client and identifier helpers         |
-| `src/modules/prisma-retry`   | Prisma extension factory for retrying transient failures     |
-| `src/modules/rate-limiter`   | Rule lookup, count aggregation, and rate-limit enforcement   |
-| `src/modules/request-logger` | Console/database request logging helpers                     |
+| Path                         | Role                                                             |
+| ---------------------------- | ------------------------------------------------------------     |
+| `src/modules/cache`          | Cache interfaces and cache backend implementations               |
+| `src/modules/hmac`           | HMAC signing, signature verification, and Express middleware     |
+| `src/modules/prisma`         | Schema-agnostic Prisma client and identifier helpers             |
+| `src/modules/prisma-retry`   | Prisma extension factory for retrying transient failures         |
+| `src/modules/rate-limiter`   | Rule lookup, count aggregation, and rate-limit enforcement       |
+| `src/modules/request-logger` | Console/database request logging helpers                         |
+| `src/modules/environment`    | Type-safe way to load, parse, and validate environment variables |
 
 ### Shared Infrastructure
 
@@ -56,6 +57,7 @@ The design intent is:
 - Modules root: [src/modules](src/modules)
 - Shared root: [src/shared](src/shared)
 - Cache: [src/modules/cache](src/modules/cache)
+- Environment: [src/modules/environment](src/modules/environment/)
 - HMAC: [src/modules/hmac](src/modules/hmac)
 - Prisma: [src/modules/prisma](src/modules/prisma)
 - Prisma retry: [src/modules/prisma-retry](src/modules/prisma-retry)
