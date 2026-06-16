@@ -14,6 +14,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/cjs/index.js"
+    },
+    "./analytics": {
+      "types": "./dist/modules/analytics/index.d.ts",
+      "import": "./dist/modules/analytics/index.js",
+      "require": "./dist/cjs/modules/analytics/index.js"
     }
   },
   "files": [
@@ -39,6 +44,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.934.0",
+    "mixpanel-browser": "^2.78.0",
     "morgan": "^1.10.1",
     "pg": "^8.16.3",
     "winston": "^3.19.0",
@@ -47,6 +53,7 @@
   "devDependencies": {
     "@rapid-recovery-agency-inc/eslint-plugin-rra": "^0.22.0",
     "@types/jest": "^30.0.0",
+    "@types/mixpanel-browser": "^2.50.2",
     "@types/morgan": "^1.9.10",
     "@types/node": "^24.10.1",
     "@types/pg": "^8.15.5",
