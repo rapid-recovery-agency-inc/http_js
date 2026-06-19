@@ -137,7 +137,7 @@ export class Env<C extends Record<string, EnvVarOptions>> {
         'Environment not initialized. Call .initializeSync() or await .initialize() first.',
       );
     }
-    return this.values as {
+    return Object.freeze({ ...this.values }) as {
       [K in keyof C]: InferEnvValue<C[K]>;
     };
   }
@@ -150,7 +150,7 @@ export class Env<C extends Record<string, EnvVarOptions>> {
     if (!this.initialized) {
       this.initializeSync();
     }
-    return this.values as {
+    return Object.freeze({ ...this.values }) as {
       [K in keyof C]: InferEnvValue<C[K]>;
     };
   }
