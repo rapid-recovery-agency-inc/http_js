@@ -277,10 +277,8 @@ const executeWithRetry = async <T>(
       if (!shouldRetry(error, prisma)) {
         logger.error(
           `executeWithRetry: ${errorHint} failed without recovery.`,
-          {
-            error,
-            ...logContext,
-          },
+          error,
+          logContext,
         );
         throw error;
       }
