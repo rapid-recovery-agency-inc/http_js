@@ -268,8 +268,8 @@ const executeWithRetry = async <T>(
       if (attempt === maxAttempts - 1) {
         logger.error(
           `executeWithRetry: ${errorHint} failed: attempts exhausted.`,
-          logContext,
           error,
+          logContext,
         );
         throw error;
       }
@@ -277,10 +277,8 @@ const executeWithRetry = async <T>(
       if (!shouldRetry(error, prisma)) {
         logger.error(
           `executeWithRetry: ${errorHint} failed without recovery.`,
-          {
-            ...logContext,
-            error,
-          },
+          error,
+          logContext,
         );
         throw error;
       }
@@ -299,10 +297,11 @@ const executeWithRetry = async <T>(
     }
   }
 
-  logger.error(`executeWithRetry: ${errorHint} failed and exhausted retries.`, {
-    ...settings.logContext,
-    error: lastError,
-  });
+  logger.error(
+    `executeWithRetry: ${errorHint} failed and exhausted retries.`,
+    lastError,
+    settings.logContext,
+  );
 
   throw (
     lastError ?? new Error(`${errorHint} failed without providing an error.`)
