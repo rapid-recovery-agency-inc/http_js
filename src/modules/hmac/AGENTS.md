@@ -19,8 +19,10 @@ request
 | File                     | Role                                                           |
 | ------------------------ | -------------------------------------------------------------- |
 | `../../../index.ts`      | Root package export surface for this module                    |
-| `services.ts`            | Verification logic, dependency helpers, and Express middleware |
-| `utils.ts`               | Low-level signing helper                                       |
+| `core.ts`                | Canonicalization, signing, verification, and secret resolution |
+| `client.ts`              | Public client factory and AWS/direct secret adapters           |
+| `services.ts`            | Legacy verification helpers and Express middleware             |
+| `utils.ts`               | Backward-compatible low-level signing helper                   |
 | `types.ts`               | HMAC request and environment types                             |
 | `constants.ts`           | Error message constants                                        |
 | `exceptions.ts`          | HMAC-specific exception type                                   |
