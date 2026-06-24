@@ -1,5 +1,3 @@
-import { timingSafeEqual } from 'node:crypto';
-
 import type {
   ExpressMiddleware,
   ExpressRequestLike,
@@ -11,13 +9,19 @@ import {
   HMAC_MISSING_SIGNATURE,
   HMAC_UNSUPPORTED_METHOD,
 } from './constants';
+import {
+  buildHmacMessage,
+  hmacSignaturesMatch,
+  normalizeHmacMethod,
+  signHmacMessage,
+} from './core';
 import { HMACException } from './exceptions';
 import type {
   HMACEnvironment,
   HMACFactoryDependency,
   HMACRequestLike,
 } from './types';
-import { sign } from './utils';
+import { signLegacyHmac } from './utils';
 
 function resolveRequestUrl(request: ExpressRequestLike): string {
   if (request.originalUrl !== undefined && request.originalUrl.length > 0) {
@@ -42,7 +46,7 @@ function createHmacRequestFromExpress(
 
   return {
     async body(): Promise<Buffer> {
-      if (request.method !== 'POST') {
+      if (request.method.trim().toUpperCase() === 'GET') {
         return Buffer.alloc(0);
       }
 
@@ -104,15 +108,21 @@ function normalizeQueryParams(
   return Object.fromEntries(queryParams.entries());
 }
 
-function signaturesMatch(left: string, right: string): boolean {
-  const leftBuffer = Buffer.from(left, 'utf8');
-  const rightBuffer = Buffer.from(right, 'utf8');
-
-  if (leftBuffer.length !== rightBuffer.length) {
+function matchesLegacySignature(
+  signature: string,
+  secret: string,
+  request: HMACRequestLike,
+  params: Record<string, string>,
+  body: Buffer | Uint8Array | null,
+): boolean {
+  try {
+    return hmacSignaturesMatch(
+      signLegacyHmac(secret, request.url, params, body),
+      signature,
+    );
+  } catch {
     return false;
   }
-
-  return timingSafeEqual(leftBuffer, rightBuffer);
 }
 
 export async function requireHmacSignature(
@@ -125,21 +135,42 @@ export async function requireHmacSignature(
     throw new HMACException(401, HMAC_MISSING_SIGNATURE);
   }
 
-  if (request.method !== 'GET' && request.method !== 'POST') {
+  let method;
+  try {
+    method = normalizeHmacMethod(request.method);
+  } catch {
     throw new HMACException(401, HMAC_UNSUPPORTED_METHOD);
   }
 
   const params = normalizeQueryParams(request.queryParams);
-  const body = request.method === 'POST' ? await request.body() : null;
-
-  const isValid = env.SECRETS.some((secret) => {
-    const expectedSignature = sign(secret, request.url, params, body);
-    return signaturesMatch(expectedSignature, signature);
+  const body = method === 'GET' ? null : await request.body();
+  const message = buildHmacMessage({
+    ...(body === null ? {} : { body }),
+    method,
+    params,
+    url: request.url,
   });
 
-  if (!isValid) {
-    throw new HMACException(401, HMAC_INVALID_SIGNATURE);
+  const isValid = env.SECRETS.some((secret) => {
+    const expectedSignature = signHmacMessage(secret, message);
+    return hmacSignaturesMatch(expectedSignature, signature);
+  });
+
+  if (isValid) {
+    return;
   }
+
+  const isLegacyValid =
+    (method === 'GET' || method === 'POST') &&
+    env.SECRETS.some((secret) =>
+      matchesLegacySignature(signature, secret, request, params, body),
+    );
+
+  if (isLegacyValid) {
+    return;
+  }
+
+  throw new HMACException(401, HMAC_INVALID_SIGNATURE);
 }
 
 export function buildHmacFactoryDependency(
