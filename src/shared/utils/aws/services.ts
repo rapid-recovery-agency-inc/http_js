@@ -29,8 +29,10 @@ function sortSecretsByTimestamp(
 
 export async function fetchAwsSecret(
   secretName: string,
-  awsRegion: string,
-  client = new SecretsManagerClient({ region: awsRegion }),
+  awsRegion: string | undefined = undefined,
+  client = new SecretsManagerClient(
+    awsRegion === undefined ? {} : { region: awsRegion },
+  ),
 ): Promise<Record<string, string>> {
   let response;
 
