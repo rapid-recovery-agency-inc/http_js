@@ -1,6 +1,8 @@
 import { createHmac } from 'node:crypto';
 
-function encodePath(url: URL): string {
+import { buildHmacMessage, signHmacMessage } from './core';
+
+function encodeLegacyPath(url: URL): string {
   return url.pathname
     .split('/')
     .map((segment) => encodeURIComponent(segment))
@@ -13,8 +15,25 @@ export function sign(
   params: Record<string, unknown> | null = null,
   body: Uint8Array | Buffer | null = null,
 ): string {
+  return signHmacMessage(
+    secretKey,
+    buildHmacMessage({
+      ...(body === null ? {} : { body }),
+      method: body === null ? 'GET' : 'POST',
+      ...(params === null ? {} : { params }),
+      url,
+    }),
+  );
+}
+
+export function signLegacyHmac(
+  secretKey: string,
+  url: string,
+  params: Record<string, unknown> | null = null,
+  body: Uint8Array | Buffer | null = null,
+): string {
   const parsedUrl = new URL(url);
-  const path = encodePath(parsedUrl);
+  const path = encodeLegacyPath(parsedUrl);
   const sortedParams =
     params === null
       ? ''
