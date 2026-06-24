@@ -14,7 +14,7 @@ import {
   requireHmacSignature,
 } from '../services';
 import type { HMACRequestLike } from '../types';
-import { sign } from '../utils';
+import { sign, signLegacyHmac } from '../utils';
 
 class TestHeaders {
   private readonly entries: Record<string, string>;
@@ -184,6 +184,43 @@ describe('hmac', () => {
     await expect(requireHmacSignature(request, env)).resolves.toBeUndefined();
   });
 
+  it.each(['PATCH', 'DELETE'])(
+    'accepts valid %s signatures with request bodies',
+    async (method) => {
+      const body = Buffer.from('{"name":"Alice"}', 'utf8');
+      const signature = sign(
+        'current_secret',
+        'https://api.example.com/users',
+        {},
+        body,
+      );
+      const request = createRequest({
+        async body(): Promise<Buffer> {
+          return body;
+        },
+        headers: new TestHeaders({ 'X-HMAC-Signature': signature }),
+        method,
+      });
+
+      await expect(requireHmacSignature(request, env)).resolves.toBeUndefined();
+    },
+  );
+
+  it('accepts legacy http_js GET signatures during migration', async () => {
+    const url = "https://api.example.com/v1/a:b!'()*";
+    const signature = signLegacyHmac('current_secret', url);
+
+    await expect(
+      requireHmacSignature(
+        createRequest({
+          headers: new TestHeaders({ 'X-HMAC-Signature': signature }),
+          url,
+        }),
+        env,
+      ),
+    ).resolves.toBeUndefined();
+  });
+
   it('rejects requests without signatures', async () => {
     await expect(requireHmacSignature(createRequest(), env)).rejects.toEqual(
       expect.objectContaining({
@@ -198,7 +235,7 @@ describe('hmac', () => {
       requireHmacSignature(
         createRequest({
           headers: new TestHeaders({ 'X-HMAC-Signature': 'abc' }),
-          method: 'DELETE',
+          method: 'PUT',
         }),
         env,
       ),
@@ -280,6 +317,32 @@ describe('hmac', () => {
     expect(next).toHaveBeenCalledWith();
   });
 
+  it.each(['PATCH', 'DELETE'])(
+    'allows valid %s signatures through middleware',
+    async (method) => {
+      const middleware = hmacMiddleware(env);
+      const body = { name: 'Alice' };
+      const signature = sign(
+        'current_secret',
+        'http://localhost/users',
+        {},
+        Buffer.from(JSON.stringify(body), 'utf8'),
+      );
+      const request = createExpressRequest({
+        body,
+        headers: { 'X-HMAC-Signature': signature },
+        method,
+      });
+      const response = new MockExpressResponse();
+      const next = jest.fn<void, [unknown?]>();
+
+      await middleware(request, response, next as ExpressNextFunction);
+
+      expect(response.statusCode).toBe(200);
+      expect(next).toHaveBeenCalledWith();
+    },
+  );
+
   it('returns 401 from middleware when the signature is missing', async () => {
     const middleware = hmacMiddleware(env);
     const request = createExpressRequest();
@@ -297,7 +360,7 @@ describe('hmac', () => {
     const middleware = hmacMiddleware(env);
     const request = createExpressRequest({
       headers: { 'X-HMAC-Signature': 'abc' },
-      method: 'DELETE',
+      method: 'PUT',
     });
     const response = new MockExpressResponse();
     const next = jest.fn<void, [unknown?]>();
