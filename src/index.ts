@@ -165,3 +165,15 @@ export {
   type BooleanString,
   type ProtocolDefinition,
 } from './shared/utils/protocols';
+
+export { Env, createEnvironment } from './modules/environment';
+export type {
+  EnvVarOptions,
+  InferEnvValue,
+  DotEnvPath,
+  EnvCallback,
+  SyncEnvCallback,
+  EnvConstructorOptions,
+  CreateEnvironmentOptions,
+  CreateEnvironmentSetEnvCallback,
+} from './modules/environment';

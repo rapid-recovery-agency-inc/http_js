@@ -7,8 +7,11 @@ TypeScript utilities for building HTTP APIs and microservices.
 ```text
 src/
 ├── index.ts
+├── cli/
+│   ├── setup-environment.ts
 ├── modules/
 │   ├── cache/
+|   ├── environment/
 │   ├── hmac/
 │   ├── prisma/
 │   ├── prisma-retry/
@@ -39,6 +42,7 @@ src/
 ## Modules
 
 - `cache`: in-memory, repository-backed SQL, and Redis cache implementations
+- `Environment`: type-safe way to load, parse, and validate environment variables
 - `hmac`: signing, signature verification, and Express middleware helpers
 - `prisma`: schema-agnostic Prisma client and identifier helpers
 - `prisma-retry`: Prisma extension factory for retrying transient query failures
