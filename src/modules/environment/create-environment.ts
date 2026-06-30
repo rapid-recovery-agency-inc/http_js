@@ -31,17 +31,25 @@ export function createEnvironment<C extends Record<string, EnvVarOptions>>(
 
   if (isSingleton) {
     const globalStore = globalThis as unknown as {
-      __ENV_SYNC_SINGLETON__?: Env<C>;
+      __ENV_SYNC_SINGLETON__?: { config: unknown; instance: Env<any> };
     };
 
-    if (!globalStore.__ENV_SYNC_SINGLETON__) {
-      globalStore.__ENV_SYNC_SINGLETON__ = new Env<C>({
+    const existing = globalStore.__ENV_SYNC_SINGLETON__;
+
+    if (!existing) {
+      envInstance = new Env<C>({
         config,
         options: envOptions,
       });
+      globalStore.__ENV_SYNC_SINGLETON__ = { config, instance: envInstance };
+    } else {
+      if (existing.config !== config) {
+        throw new Error(
+          '[env] createEnvironment({ isSingleton: true }) was called with a different config object. Reuse the same config reference or set isSingleton: false.',
+        );
+      }
+      envInstance = existing.instance as Env<C>;
     }
-
-    envInstance = globalStore.__ENV_SYNC_SINGLETON__;
   } else {
     envInstance = new Env<C>({
       config,

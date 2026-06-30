@@ -84,7 +84,6 @@ const usageText = [
   '  -h, --help            Show this message.',
   '',
   'Examples:',
-  '  setup-environment -- next start',
   '  setup-environment --secret-name prod/my-app -- node server.js',
   '  setup-environment --secret-names prod/base,prod/web -- node server.js',
   '  setup-environment --secret-names prod/base,prod/web --write-to .env.production',
@@ -221,14 +220,12 @@ function parseSecretNameFlag(
   parsed: ParsedSetupEnvArgs,
 ): { updated: boolean; nextIndex: number } {
   const { value, nextIndex } = parseFlagValue(argv, index, '--secret-name');
-  if (!value) {
+  const names = value ? parseSecretNames(value) : [];
+  if (names.length === 0) {
     parsed.error = 'Missing value for --secret-name.';
     return { updated: false, nextIndex };
   }
-  parsed.secretNames = [
-    ...(parsed.secretNames ?? []),
-    ...parseSecretNames(value),
-  ];
+  parsed.secretNames = [...(parsed.secretNames ?? []), ...names];
   return { updated: true, nextIndex };
 }
 
