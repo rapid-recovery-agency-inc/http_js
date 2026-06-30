@@ -6,7 +6,7 @@ A robust, type-safe environment variable manager. It validates, parses, and prov
 
 - **Early Validation:** Throw errors immediately on boot instead of discovering missing variables deep in your runtime.
 - **Type Safety:** Say goodbye to `process.env.IS_FEATURE_ENABLED === 'true'`. Parse strings into booleans, numbers, arrays, or objects directly at load time.
-- **Synchronous Execution:** The `createEnvironment` factory loads `.env` files synchronously and processes the config blockively. No async `await initEnv()` required in your top-level files.
+- **Synchronous Execution:** The `createEnvironment` factory loads `.env` files synchronously and processes the config in a blocking way. No async `await initEnv()` required in your top-level files.
 - **Singleton Pattern:** Configured to share one validated environment instance across your entire module dependency tree.
 
 ## CLI: `setup-environment`
@@ -64,7 +64,7 @@ const config = {
   },
   FEATURE_FLAG: {
     required: false,
-    defaultValue: false,
+    defaultValue: 'false',
     parse: (val) => val === 'true',
   },
   API_KEYS: {

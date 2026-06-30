@@ -75,5 +75,23 @@ describe('setup-environment', () => {
 
       expect(result.error).toBe('Missing value for --secret-name.');
     });
+
+    it('should return an error if a flag value is omitted and the next token is another flag', () => {
+      const argv = ['--secret-name', '--write-to', '.env.production'];
+      const result = parseSetupEnvArgs(argv);
+      expect(result.error).toBe('Missing value for --secret-name.');
+    });
+
+    it('should reject keys that are not valid environment variable names', () => {
+      expect(() => normalizeSecretValues({ 'MY=KEY': 'value' })).toThrow(
+        'Secret key "MY=KEY" is not a valid environment variable name.',
+      );
+      expect(() => normalizeSecretValues({ 'MY\nKEY': 'value' })).toThrow(
+        'Secret key "MY\nKEY" is not a valid environment variable name.',
+      );
+      expect(() => normalizeSecretValues({ '1INVALID': 'value' })).toThrow(
+        'Secret key "1INVALID" is not a valid environment variable name.',
+      );
+    });
   });
 });

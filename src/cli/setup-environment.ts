@@ -205,7 +205,7 @@ function parseFlagValue(
   }
 
   const nextValue = argv[index + 1];
-  if (nextValue === undefined) {
+  if (nextValue === undefined || nextValue.startsWith('-')) {
     return { value: undefined, nextIndex: index + 1 };
   }
 
@@ -357,6 +357,12 @@ export function normalizeSecretValues(
   const normalized: Record<string, string> = {};
 
   for (const [key, rawValue] of Object.entries(secretPayload)) {
+    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) {
+      throw new Error(
+        `Secret key "${key}" is not a valid environment variable name.`,
+      );
+    }
+
     if (typeof rawValue === 'string') {
       normalized[key] = rawValue;
       continue;
@@ -404,9 +410,16 @@ export async function runSetupEnv(
   argv: string[],
   runtimeOverrides: Partial<SetupEnvRuntime> = {},
 ): Promise<number> {
-  const runtime: SetupEnvRuntime = {
+  const runtimeBase: SetupEnvRuntime = {
     ...defaultRuntime,
     ...runtimeOverrides,
+  };
+  const runtime: SetupEnvRuntime = {
+    ...runtimeBase,
+    fetchSecrets:
+      runtimeOverrides.fetchSecrets ??
+      ((secretName) =>
+        fetchAwsSecret(secretName, runtimeBase.env.AWS_REGION || 'us-east-1')),
   };
 
   const parsedArgs = parseSetupEnvArgs(argv);

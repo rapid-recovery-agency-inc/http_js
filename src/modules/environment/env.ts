@@ -56,7 +56,7 @@ export class Env<C extends Record<string, EnvVarOptions>> {
     const callbackResult = this.setEnvCallback();
     if (this.isPromiseLike(callbackResult)) {
       throw new Error(
-        '[env] setEnvCallback returned a Promise during sync initialization. Use a synchronous callback or call initialize().',
+        '[env] setEnvCallback returned a Promise during sync initialization. Use a synchronous callback',
       );
     }
 
@@ -126,7 +126,7 @@ export class Env<C extends Record<string, EnvVarOptions>> {
   public get(): { [K in keyof C]: InferEnvValue<C[K]> } {
     if (!this.initialized) {
       throw new Error(
-        'Environment not initialized. Call .initializeSync() or await .initialize() first.',
+        'Environment not initialized. Call .initializeSync() before calling .get().',
       );
     }
     return Object.freeze({ ...this.values }) as {

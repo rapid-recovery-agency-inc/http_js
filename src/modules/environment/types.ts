@@ -37,12 +37,12 @@ export type InferEnvValue<O extends EnvVarOptions> = O['parse'] extends (
     ? T
     : O['defaultValue'] extends string
       ? T
-      : T
+      : T | undefined // ← fix: optional with no default can be undefined
   : O['required'] extends true
     ? string
     : O['defaultValue'] extends string
       ? string
-      : string;
+      : string | undefined; // ← fix: optional with no default can be undefined
 
 /**
  * Callback type for fetching environment variables.

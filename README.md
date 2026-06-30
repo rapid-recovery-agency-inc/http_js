@@ -11,7 +11,7 @@ src/
 │   ├── setup-environment.ts
 ├── modules/
 │   ├── cache/
-|   ├── environment/
+│   ├── environment/
 │   ├── hmac/
 │   ├── prisma/
 │   ├── prisma-retry/
