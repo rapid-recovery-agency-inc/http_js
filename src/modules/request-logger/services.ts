@@ -14,10 +14,7 @@ import {
   stringifyExpressBody,
 } from '../../shared/express/services';
 import { createLogger } from '../../shared/logging/services';
-import {
-  extractRequestData,
-  validateRequestData,
-} from '../../shared/requests/services';
+import { extractRequestData } from '../../shared/requests/services';
 
 import {
   REQUEST_LOGGER_CACHE_HEADER,
@@ -172,7 +169,6 @@ export function databaseRequestLoggerMiddleware(
         await extractRequestData(contextRequest),
         override,
       );
-      validateRequestData(requestData);
     } catch (error) {
       logger.error(`databaseRequestLoggerMiddleware: ${String(error)}`);
       response.status(400).json({ error: String(error) });

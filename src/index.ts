@@ -142,7 +142,6 @@ export {
 
 export {
   extractRequestData,
-  validateRequestData,
   type ExtractedRequestData,
   type HeadersLike,
   type NextCallable,

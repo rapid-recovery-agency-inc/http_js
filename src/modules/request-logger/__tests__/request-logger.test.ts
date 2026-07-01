@@ -207,30 +207,6 @@ describe('request logger', () => {
     expect(next).toHaveBeenCalledTimes(1);
   });
 
-  it('returns 400 when request data validation fails', async () => {
-    const request = createExpressRequest({});
-    const response = new MockExpressResponse();
-    const next = jest.fn<void, [unknown?]>();
-    const middleware = databaseRequestLoggerMiddleware(
-      [],
-      (_currentRequest) =>
-        ({
-          writer: new MockPersistence() as RequestLoggerPersistenceLike,
-          reader: new MockPersistence() as RequestLoggerPersistenceLike,
-        }) as ServiceContext<
-          RequestLoggerPersistenceLike,
-          RequestLoggerPersistenceLike
-        >,
-    );
-
-    await middleware(request, response, next as ExpressNextFunction);
-
-    expect(response.statusCode).toBe(400);
-    expect(response.body).toEqual({
-      error: 'Error: validateRequestData:Missing required field: product_name',
-    });
-  });
-
   it('persists successful requests and attaches the request id header', async () => {
     const persistence = new MockPersistence();
     const request = createExpressRequest();

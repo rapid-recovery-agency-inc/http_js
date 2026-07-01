@@ -3,7 +3,6 @@ import {
   type HeadersLike,
   type QueryParamsLike,
   type RequestLike,
-  validateRequestData,
 } from '../services';
 
 class TestHeaders implements HeadersLike {
@@ -101,19 +100,5 @@ describe('requests', () => {
     });
 
     await expect(extractRequestData(request)).rejects.toThrow(SyntaxError);
-  });
-
-  it('validates required product fields', () => {
-    expect(() =>
-      validateRequestData({
-        path: '/example',
-        requestHeaders: '{}',
-        requestBody: '',
-        productName: null,
-        productModule: 'notifications',
-        productFeature: 'send',
-        productTenant: 'tenant-a',
-      }),
-    ).toThrow('validateRequestData:Missing required field: product_name');
   });
 });

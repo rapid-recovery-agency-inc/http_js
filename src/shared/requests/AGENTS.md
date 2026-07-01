@@ -10,7 +10,6 @@ This shared area provides framework-agnostic request extraction and request vali
 request-like object
   -> extractRequestData()
 	  -> ExtractedRequestData
-		  -> validateRequestData()
 ```
 
 ## File Structure

@@ -135,27 +135,3 @@ export async function extractRequestData(
     productTenant: productFields.product_tenant,
   };
 }
-
-export function validateRequestData(requestData: ExtractedRequestData): void {
-  if (requestData.productName === null) {
-    throw new Error('validateRequestData:Missing required field: product_name');
-  }
-
-  if (requestData.productModule === null) {
-    throw new Error(
-      'validateRequestData:Missing required field: product_module',
-    );
-  }
-
-  if (requestData.productFeature === null) {
-    throw new Error(
-      'validateRequestData:Missing required field: product_feature',
-    );
-  }
-
-  if (requestData.productTenant === null) {
-    throw new Error(
-      'validateRequestData:Missing required field: product_tenant',
-    );
-  }
-}
