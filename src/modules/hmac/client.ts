@@ -1,5 +1,3 @@
-import { fetchAwsSecret } from '../../shared/utils/aws/services';
-
 import { HMAC_SIGNATURE_HEADER } from './constants';
 import {
   buildHmacMessage,
@@ -34,54 +32,16 @@ function normalizeSignatureHeader(signatureHeader: string | undefined): string {
   return signatureHeader.trim();
 }
 
-function normalizeSecretName(secretName: string): string {
-  if (typeof secretName !== 'string' || secretName.trim().length === 0) {
-    throw new Error('HmacClient requires a non-empty secretName.');
-  }
-
-  return secretName.trim();
-}
-
-function secretsFromAwsPayload(payload: Record<string, string>): string[] {
-  const secrets = Object.values(payload);
-
-  if (secrets.length === 0) {
-    throw new Error(
-      'HmacClient requires at least one secret value from AWS Secrets Manager.',
-    );
-  }
-
-  if (
-    secrets.some((secret) => typeof secret !== 'string' || secret.length === 0)
-  ) {
-    throw new Error(
-      'HmacClient requires every AWS secret value to be a non-empty string.',
-    );
-  }
-
-  return secrets;
-}
-
 function createOptionsResolver(options: HmacClientOptions): HmacSecretResolver {
   const configuredSources = [
-    'secretName' in options,
     'secrets' in options,
     'resolveSecrets' in options,
   ].filter(Boolean).length;
 
   if (configuredSources !== 1) {
     throw new Error(
-      'HmacClient requires exactly one of secretName, secrets, or resolveSecrets.',
+      'HmacClient requires exactly one of secrets or resolveSecrets.',
     );
-  }
-
-  if ('secretName' in options) {
-    const secretName = normalizeSecretName(options.secretName);
-
-    return async (): Promise<readonly string[]> =>
-      secretsFromAwsPayload(
-        await fetchAwsSecret(secretName, options.awsRegion),
-      );
   }
 
   if ('secrets' in options) {
@@ -94,7 +54,7 @@ function createOptionsResolver(options: HmacClientOptions): HmacSecretResolver {
     typeof options.resolveSecrets !== 'function'
   ) {
     throw new Error(
-      'HmacClient requires exactly one of secretName, secrets, or resolveSecrets.',
+      'HmacClient requires exactly one of secrets or resolveSecrets.',
     );
   }
 

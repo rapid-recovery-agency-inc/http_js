@@ -2,8 +2,8 @@
 
 Canonical HMAC-SHA256 signing and verification for internal HTTP requests.
 The module supports outbound clients, framework-neutral verification, Express
-middleware, secret rotation, custom signed headers, and lazy AWS Secrets
-Manager resolution.
+middleware, secret rotation, custom signed headers, and provider-agnostic lazy
+secret resolution.
 
 Node.js 24 or newer is required. Consumers on Node.js 22 must upgrade before
 adopting this package release.
@@ -17,7 +17,7 @@ The `createHmacClient` contract is compatible with the former
 import { createHmacClient } from '@rapid-recovery-agency-inc/http_js';
 
 const hmac = createHmacClient({
-  secretName: 'production/service-hmac',
+  secrets: ['current-secret', 'previous-secret'],
   signatureHeader: 'X-HMAC-Signature',
   customHeaders: [
     {
@@ -53,19 +53,26 @@ const direct = createHmacClient({
 const resolved = createHmacClient({
   resolveSecrets: async () => loadSecretsFromAnotherProvider(),
 });
-
-const aws = createHmacClient({
-  secretName: 'production/service-hmac',
-  awsRegion: 'us-east-1', // optional; the AWS provider chain is used otherwise
-});
 ```
 
 The first secret signs outbound requests. Verification checks every secret to
 support rotation. Asynchronous resolution is lazy, shares one in-flight request,
 caches successful values, and retries after failures.
 
-AWS secret payload values are used in JSON property order. Put the current
-signing secret first and previous rotation secrets afterward.
+Provider-specific secret loading should happen outside the HMAC client. For
+example, AWS Secrets Manager can be composed through the shared AWS utility:
+
+```typescript
+import {
+  createHmacClient,
+  fetchAwsSecret,
+} from '@rapid-recovery-agency-inc/http_js';
+
+const awsBacked = createHmacClient({
+  resolveSecrets: async () =>
+    Object.values(await fetchAwsSecret('production/service-hmac', 'us-east-1')),
+});
+```
 
 ## Canonical message
 

@@ -1,8 +1,3 @@
-jest.mock('../../../shared/utils/aws/services', () => ({
-  fetchAwsSecret: jest.fn(),
-}));
-
-import { fetchAwsSecret } from '../../../shared/utils/aws/services';
 import { createHmacClient } from '../client';
 import {
   HMAC_INVALID_HEADERS,
@@ -12,8 +7,6 @@ import {
 } from '../constants';
 import { HmacError, HMACException } from '../exceptions';
 import type { HmacRequestInput } from '../types';
-
-const fetchAwsSecretMock = jest.mocked(fetchAwsSecret);
 
 function createDeferred<T>(): {
   promise: Promise<T>;
@@ -41,23 +34,22 @@ const baseInput: HmacRequestInput = {
 };
 
 describe('createHmacClient', () => {
-  beforeEach(() => {
-    fetchAwsSecretMock.mockResolvedValue({
-      current: 'primary-secret',
-      previous: 'rotated-secret',
-    });
-  });
-
-  it('uses the legacy environment API defaults', () => {
-    const client = createHmacClient({ secretName: 'prod/hmac' });
+  it('uses the default signature header', () => {
+    const client = createHmacClient({ secrets: ['primary-secret'] });
 
     expect(client.signatureHeader).toBe(HMAC_SIGNATURE_HEADER);
   });
 
   it('validates client configuration eagerly', () => {
-    expect(() => createHmacClient({ secretName: ' ' })).toThrow(
-      'HmacClient requires a non-empty secretName.',
+    expect(() => createHmacClient({} as never)).toThrow(
+      'HmacClient requires exactly one of secrets or resolveSecrets.',
     );
+    expect(() =>
+      createHmacClient({
+        resolveSecrets: async () => ['secret'],
+        secrets: ['secret'],
+      } as never),
+    ).toThrow('HmacClient requires exactly one of secrets or resolveSecrets.');
     expect(() =>
       createHmacClient({ secrets: ['secret'], signatureHeader: ' ' }),
     ).toThrow(
@@ -331,34 +323,6 @@ describe('createHmacClient', () => {
     });
     await expect(invalid.sign(baseInput)).rejects.toThrow(
       'HmacClient requires every secret value to be a non-empty string.',
-    );
-  });
-
-  it('loads AWS secrets lazily in payload property order', async () => {
-    const client = createHmacClient({
-      awsRegion: 'us-east-1',
-      secretName: 'prod/hmac',
-    });
-
-    expect(fetchAwsSecretMock).not.toHaveBeenCalled();
-    await expect(client.sign(baseInput)).resolves.toBe(
-      'a579e453b6eaca57c60d0ab926c393ccfe55b00134c51f903820af7ef925439a',
-    );
-    expect(fetchAwsSecretMock).toHaveBeenCalledWith('prod/hmac', 'us-east-1');
-    expect(fetchAwsSecretMock).toHaveBeenCalledTimes(1);
-  });
-
-  it('rejects invalid AWS payloads', async () => {
-    fetchAwsSecretMock.mockResolvedValueOnce({});
-    const empty = createHmacClient({ secretName: 'prod/hmac' });
-    await expect(empty.sign(baseInput)).rejects.toThrow(
-      'HmacClient requires at least one secret value from AWS Secrets Manager.',
-    );
-
-    fetchAwsSecretMock.mockResolvedValueOnce({ current: '' });
-    const invalid = createHmacClient({ secretName: 'prod/hmac' });
-    await expect(invalid.sign(baseInput)).rejects.toThrow(
-      'HmacClient requires every AWS secret value to be a non-empty string.',
     );
   });
 });

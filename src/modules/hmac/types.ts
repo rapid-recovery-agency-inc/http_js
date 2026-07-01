@@ -36,21 +36,11 @@ interface HmacClientSharedOptions {
 export type HmacClientOptions = HmacClientSharedOptions &
   (
     | {
-        awsRegion?: string;
         resolveSecrets?: never;
-        secretName: string;
-        secrets?: never;
-      }
-    | {
-        awsRegion?: never;
-        resolveSecrets?: never;
-        secretName?: never;
         secrets: readonly string[];
       }
     | {
-        awsRegion?: never;
         resolveSecrets: HmacSecretResolver;
-        secretName?: never;
         secrets?: never;
       }
   );

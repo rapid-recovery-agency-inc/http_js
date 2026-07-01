@@ -20,7 +20,7 @@ request
 | ------------------------ | -------------------------------------------------------------- |
 | `../../../index.ts`      | Root package export surface for this module                    |
 | `core.ts`                | Canonicalization, signing, verification, and secret resolution |
-| `client.ts`              | Public client factory and AWS/direct secret adapters           |
+| `client.ts`              | Public provider-agnostic client factory                        |
 | `services.ts`            | Legacy verification helpers and Express middleware             |
 | `utils.ts`               | Backward-compatible low-level signing helper                   |
 | `types.ts`               | HMAC request and environment types                             |
