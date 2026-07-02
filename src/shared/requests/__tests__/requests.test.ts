@@ -1,9 +1,9 @@
 import {
+  applyRequestDefaults,
   extractRequestData,
   type HeadersLike,
   type QueryParamsLike,
   type RequestLike,
-  validateRequestData,
 } from '../services';
 
 class TestHeaders implements HeadersLike {
@@ -103,17 +103,56 @@ describe('requests', () => {
     await expect(extractRequestData(request)).rejects.toThrow(SyntaxError);
   });
 
-  it('validates required product fields', () => {
-    expect(() =>
-      validateRequestData({
+  it('fills missing product fields with DEFAULT values', () => {
+    expect(
+      applyRequestDefaults({
         path: '/example',
         requestHeaders: '{}',
         requestBody: '',
         productName: null,
         productModule: 'notifications',
-        productFeature: 'send',
-        productTenant: 'tenant-a',
+        productFeature: null,
+        productTenant: null,
       }),
-    ).toThrow('validateRequestData:Missing required field: product_name');
+    ).toEqual({
+      path: '/example',
+      requestHeaders: '{}',
+      requestBody: '',
+      productName: 'DEFAULT',
+      productModule: 'notifications',
+      productFeature: 'DEFAULT',
+      productTenant: 'DEFAULT',
+    });
+  });
+
+  it('applies overrides and falls back to DEFAULT for missing values', () => {
+    expect(
+      applyRequestDefaults(
+        {
+          path: '/example',
+          requestHeaders: '{}',
+          requestBody: '',
+          productName: null,
+          productModule: null,
+          productFeature: null,
+          productTenant: null,
+        },
+        {
+          requestHeaders: null,
+          requestBody: null,
+          productName: 'api',
+          productModule: null,
+          productFeature: 'send',
+        },
+      ),
+    ).toEqual({
+      path: '/example',
+      requestHeaders: '{}',
+      requestBody: '',
+      productName: 'api',
+      productModule: 'DEFAULT',
+      productFeature: 'send',
+      productTenant: 'DEFAULT',
+    });
   });
 });

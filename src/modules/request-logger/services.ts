@@ -15,8 +15,8 @@ import {
 } from '../../shared/express/services';
 import { createLogger } from '../../shared/logging/services';
 import {
+  applyRequestDefaults,
   extractRequestData,
-  validateRequestData,
 } from '../../shared/requests/services';
 
 import {
@@ -30,34 +30,6 @@ import type {
 import { saveRequestLog } from './utils';
 
 const logger = createLogger('request-logger');
-
-function applyOverride(
-  requestData: Awaited<ReturnType<typeof extractRequestData>>,
-  override: RequestLoggerOverride | null,
-): Awaited<ReturnType<typeof extractRequestData>> {
-  return {
-    ...requestData,
-    ...(override?.productName === undefined
-      ? {}
-      : { productName: override.productName }),
-    ...(override?.productModule === undefined
-      ? {}
-      : { productModule: override.productModule }),
-    ...(override?.productFeature === undefined
-      ? {}
-      : { productFeature: override.productFeature }),
-    ...(override?.productTenant === undefined
-      ? {}
-      : { productTenant: override.productTenant }),
-    ...(override?.requestHeaders === undefined ||
-    override.requestHeaders === null
-      ? {}
-      : { requestHeaders: override.requestHeaders }),
-    ...(override?.requestBody === undefined || override.requestBody === null
-      ? {}
-      : { requestBody: override.requestBody }),
-  };
-}
 
 function createSingleExecutionCallback<TArgs extends unknown[]>(
   callback: (...args: TArgs) => void,
@@ -168,11 +140,10 @@ export function databaseRequestLoggerMiddleware(
 
     let requestData;
     try {
-      requestData = applyOverride(
+      requestData = applyRequestDefaults(
         await extractRequestData(contextRequest),
         override,
       );
-      validateRequestData(requestData);
     } catch (error) {
       logger.error(`databaseRequestLoggerMiddleware: ${String(error)}`);
       response.status(400).json({ error: String(error) });

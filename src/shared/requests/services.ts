@@ -56,6 +56,25 @@ export interface ExtractedRequestData {
   productTenant: string | null;
 }
 
+export interface RequestDataDefaultsOverride {
+  productFeature?: string | null;
+  productModule?: string | null;
+  productName?: string | null;
+  productTenant?: string | null;
+  requestBody?: string | null;
+  requestHeaders?: string | null;
+}
+
+export interface NormalizedRequestData {
+  path: string;
+  requestHeaders: string;
+  requestBody: string;
+  productFeature: string;
+  productModule: string;
+  productName: string;
+  productTenant: string;
+}
+
 function createEmptyProductFields(): Record<ProductField, string | null> {
   return {
     product_name: null,
@@ -136,26 +155,36 @@ export async function extractRequestData(
   };
 }
 
-export function validateRequestData(requestData: ExtractedRequestData): void {
-  if (requestData.productName === null) {
-    throw new Error('validateRequestData:Missing required field: product_name');
-  }
+export function applyRequestDefaults(
+  requestData: ExtractedRequestData,
+  override: RequestDataDefaultsOverride | null = null,
+): NormalizedRequestData {
+  const resolveDefault = (
+    overrideValue: string | null | undefined,
+    extractedValue: string | null | undefined,
+  ): string => {
+    return overrideValue ?? extractedValue ?? 'DEFAULT';
+  };
 
-  if (requestData.productModule === null) {
-    throw new Error(
-      'validateRequestData:Missing required field: product_module',
-    );
-  }
-
-  if (requestData.productFeature === null) {
-    throw new Error(
-      'validateRequestData:Missing required field: product_feature',
-    );
-  }
-
-  if (requestData.productTenant === null) {
-    throw new Error(
-      'validateRequestData:Missing required field: product_tenant',
-    );
-  }
+  return {
+    path: requestData.path,
+    requestHeaders: resolveDefault(
+      override?.requestHeaders,
+      requestData.requestHeaders,
+    ),
+    requestBody: resolveDefault(override?.requestBody, requestData.requestBody),
+    productName: resolveDefault(override?.productName, requestData.productName),
+    productModule: resolveDefault(
+      override?.productModule,
+      requestData.productModule,
+    ),
+    productFeature: resolveDefault(
+      override?.productFeature,
+      requestData.productFeature,
+    ),
+    productTenant: resolveDefault(
+      override?.productTenant,
+      requestData.productTenant,
+    ),
+  };
 }
