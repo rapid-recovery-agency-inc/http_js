@@ -138,10 +138,7 @@ describe('requests', () => {
           productTenant: null,
         },
         {
-          requestHeaders: null,
-          requestBody: null,
           productName: 'api',
-          productModule: null,
           productFeature: 'send',
         },
       ),

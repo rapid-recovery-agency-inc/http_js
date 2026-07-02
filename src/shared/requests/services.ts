@@ -57,12 +57,12 @@ export interface ExtractedRequestData {
 }
 
 export interface RequestDataDefaultsOverride {
-  productFeature?: string | null;
-  productModule?: string | null;
-  productName?: string | null;
-  productTenant?: string | null;
-  requestBody?: string | null;
-  requestHeaders?: string | null;
+  productFeature?: string;
+  productModule?: string;
+  productName?: string;
+  productTenant?: string;
+  requestBody?: string;
+  requestHeaders?: string;
 }
 
 export interface NormalizedRequestData {
@@ -160,7 +160,7 @@ export function applyRequestDefaults(
   override: RequestDataDefaultsOverride | null = null,
 ): NormalizedRequestData {
   const resolveDefault = (
-    overrideValue: string | null | undefined,
+    overrideValue: string | undefined,
     extractedValue: string | null | undefined,
   ): string => {
     return overrideValue ?? extractedValue ?? 'DEFAULT';

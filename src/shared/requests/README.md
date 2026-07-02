@@ -55,6 +55,8 @@ const normalizedWithOverride = applyRequestDefaults(data, {
   productName: 'api',
   productFeature: 'send',
 });
+
+Override fields are optional; when provided they must be strings.
 ```
 
 ## API
