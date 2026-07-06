@@ -42,11 +42,14 @@ export {
 } from './shared/express/services';
 
 export {
+  HMAC_INVALID_HEADERS,
   HMAC_INVALID_SIGNATURE,
   HMAC_MISSING_SIGNATURE,
+  HMAC_SIGNATURE_HEADER,
   HMAC_UNSUPPORTED_METHOD,
 } from './modules/hmac/constants';
-export { HMACException } from './modules/hmac/exceptions';
+export { HMACException, HmacError } from './modules/hmac/exceptions';
+export { createHmacClient } from './modules/hmac/client';
 export {
   buildHmacFactoryDependency,
   hmacMiddleware,
@@ -57,6 +60,13 @@ export type {
   HMACEnvironment,
   HMACFactoryDependency,
   HMACRequestLike,
+  HmacClientInstance,
+  HmacClientOptions,
+  HmacCustomHeaderRule,
+  HmacHeadersInput,
+  HmacHeaderValue,
+  HmacRequestInput,
+  HmacSecretResolver,
 } from './modules/hmac/types';
 
 export { timeout, type TimeoutWrapped } from './shared/utils/async/timeout';

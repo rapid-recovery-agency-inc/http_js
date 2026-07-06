@@ -15,3 +15,16 @@ export class HMACException extends Error {
     this.headers = headers;
   }
 }
+
+export class HmacError extends HMACException {
+  declare public readonly detail: string;
+
+  public constructor(
+    statusCode: number,
+    detail: string,
+    headers: Record<string, string> | undefined = undefined,
+  ) {
+    super(statusCode, detail, headers);
+    this.name = 'HmacError';
+  }
+}
