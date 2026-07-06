@@ -6,7 +6,7 @@ Framework-agnostic request interfaces and extraction helpers. Defines the minima
 
 - Decouples the library from any specific HTTP framework — only a thin `RequestLike` interface is required.
 - `extractRequestData` reads path, headers, body, and product-tracking fields (`product_name`, `product_module`, `product_feature`, `product_tenant`) in one call.
-- `validateRequestData` enforces that the mandatory product fields are present before passing data to the rate-limiter or request-logger.
+- `applyRequestDefaults` applies optional overrides and normalizes missing fields by assigning the default value `DEFAULT` before passing data to the rate-limiter or request-logger.
 
 ## Request interface
 
@@ -42,27 +42,37 @@ const data = await extractRequestData(request);
 
 Product fields are read from the request body (POST) or query string (GET).
 
-## Validating extracted data
+## Normalizing extracted data
 
 ```typescript
-import { validateRequestData } from 'http_js';
+import { applyRequestDefaults } from 'http_js';
 
-// Throws if any required product field is missing
-validateRequestData(data);
+// Missing product fields are replaced with 'DEFAULT'
+const normalized = applyRequestDefaults(data);
+
+// Optional overrides are applied first, then fallback values are resolved
+const normalizedWithOverride = applyRequestDefaults(data, {
+  productName: 'api',
+  productFeature: 'send',
+});
+
+Override fields are optional; when provided they must be strings.
 ```
 
 ## API
 
-| Export                  | Description                                                      |
-| ----------------------- | ---------------------------------------------------------------- |
-| `extractRequestData`    | Reads path, headers, body, and product fields from a request     |
-| `validateRequestData`   | Throws if required product fields are absent from extracted data |
-| `RequestLike`           | Minimal request interface required by the library                |
-| `HeadersLike`           | Interface for request headers                                    |
-| `QueryParamsLike`       | Interface for query parameter access                             |
-| `UrlLike`               | Interface for URL with a `path` property                         |
-| `ResponseLike`          | Minimal response shape `{ body, statusCode }`                    |
-| `StreamingResponseLike` | Response shape with an async body iterator                       |
-| `NextCallable`          | Type for a non-streaming downstream handler                      |
-| `StreamingNextCallable` | Type for a streaming downstream handler                          |
-| `ExtractedRequestData`  | Shape of the object returned by `extractRequestData`             |
+| Export                        | Description                                                                        |
+| ----------------------------- | ---------------------------------------------------------------------------------- |
+| `extractRequestData`          | Reads path, headers, body, and product fields from a request                       |
+| `applyRequestDefaults`        | Applies optional overrides and returns data with missing fields set to `'DEFAULT'` |
+| `RequestLike`                 | Minimal request interface required by the library                                  |
+| `HeadersLike`                 | Interface for request headers                                                      |
+| `QueryParamsLike`             | Interface for query parameter access                                               |
+| `UrlLike`                     | Interface for URL with a `path` property                                           |
+| `ResponseLike`                | Minimal response shape `{ body, statusCode }`                                      |
+| `StreamingResponseLike`       | Response shape with an async body iterator                                         |
+| `NextCallable`                | Type for a non-streaming downstream handler                                        |
+| `StreamingNextCallable`       | Type for a streaming downstream handler                                            |
+| `ExtractedRequestData`        | Shape of the object returned by `extractRequestData`                               |
+| `RequestDataDefaultsOverride` | Optional overrides accepted by `applyRequestDefaults`                              |
+| `NormalizedRequestData`       | Shape returned by `applyRequestDefaults` with non-null string fields               |

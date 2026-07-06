@@ -26,12 +26,12 @@ export type RequestLoggerContextLike = ServiceContext<
 >;
 
 export interface RequestLoggerOverride {
-  productFeature?: string | null;
-  productModule?: string | null;
-  productName?: string | null;
-  productTenant?: string | null;
-  requestBody?: string | null;
-  requestHeaders?: string | null;
+  productFeature?: string;
+  productModule?: string;
+  productName?: string;
+  productTenant?: string;
+  requestBody?: string;
+  requestHeaders?: string;
 }
 
 export interface RequestLoggerArgs extends RequestLogRecord {

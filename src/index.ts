@@ -141,12 +141,14 @@ export {
 } from './shared/logging/services';
 
 export {
+  applyRequestDefaults,
   extractRequestData,
-  validateRequestData,
   type ExtractedRequestData,
   type HeadersLike,
   type NextCallable,
+  type NormalizedRequestData,
   type QueryParamsLike,
+  type RequestDataDefaultsOverride,
   type RequestLike,
   type ResponseLike,
   type StreamingNextCallable,

@@ -207,16 +207,20 @@ describe('request logger', () => {
     expect(next).toHaveBeenCalledTimes(1);
   });
 
-  it('returns 400 when request data validation fails', async () => {
+  it('applies DEFAULT values when product fields are missing', async () => {
+    const persistence = new MockPersistence();
     const request = createExpressRequest({});
     const response = new MockExpressResponse();
-    const next = jest.fn<void, [unknown?]>();
+    const next = jest.fn<void, [unknown?]>(() => {
+      response.status(204).send();
+      response.emitFinish();
+    });
     const middleware = databaseRequestLoggerMiddleware(
       [],
       (_currentRequest) =>
         ({
-          writer: new MockPersistence() as RequestLoggerPersistenceLike,
-          reader: new MockPersistence() as RequestLoggerPersistenceLike,
+          writer: persistence as RequestLoggerPersistenceLike,
+          reader: persistence as RequestLoggerPersistenceLike,
         }) as ServiceContext<
           RequestLoggerPersistenceLike,
           RequestLoggerPersistenceLike
@@ -225,10 +229,17 @@ describe('request logger', () => {
 
     await middleware(request, response, next as ExpressNextFunction);
 
-    expect(response.statusCode).toBe(400);
-    expect(response.body).toEqual({
-      error: 'Error: validateRequestData:Missing required field: product_name',
-    });
+    expect(response.statusCode).toBe(204);
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(persistence.saveMock).toHaveBeenCalledTimes(1);
+    expect(persistence.saveMock.mock.calls[0]?.[0]).toEqual(
+      expect.objectContaining({
+        productName: 'DEFAULT',
+        productModule: 'DEFAULT',
+        productFeature: 'DEFAULT',
+        productTenant: 'DEFAULT',
+      }),
+    );
   });
 
   it('persists successful requests and attaches the request id header', async () => {
