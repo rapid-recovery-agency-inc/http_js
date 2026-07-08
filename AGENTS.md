@@ -28,16 +28,16 @@ The design intent is:
 | `src/index.ts` | Package-level public API barrel               |
 | `README.md`    | User-facing overview and development commands |
 
-### CLI 
+### CLI
 
-| Path                         | Role                                                             |
-| ---------------------------- | ------------------------------------------------------------     |
-| `src/cli/setup-environment.ts`| fetches secrets, merges them into environment variables, and then executes your app command |
+| Path                           | Role                                                                                        |
+| ------------------------------ | ------------------------------------------------------------------------------------------- |
+| `src/cli/setup-environment.ts` | fetches secrets, merges them into environment variables, and then executes your app command |
 
 ### Feature Modules
 
 | Path                         | Role                                                             |
-| ---------------------------- | ------------------------------------------------------------     |
+| ---------------------------- | ---------------------------------------------------------------- |
 | `src/modules/cache`          | Cache interfaces and cache backend implementations               |
 | `src/modules/hmac`           | HMAC signing, signature verification, and Express middleware     |
 | `src/modules/prisma`         | Schema-agnostic Prisma client and identifier helpers             |
@@ -97,6 +97,7 @@ The `build` script produces dual output:
 - The CJS output includes a `dist/cjs/package.json` with `{"type":"commonjs"}` so Node.js loads `.js` files under that tree as CommonJS regardless of the root `"type":"module"`.
 - The `package.json` `exports` field maps `import` → `dist/index.js` and `require` → `dist/cjs/index.js`.
 - Consumers using CJS (e.g. NestJS apps bundled with webpack) should use `require('@rapid-recovery-agency-inc/http_js')` — no special webpack `conditionNames` or externals wrappers are needed.
+- **Post-build patching**: `scripts/patch-esm-imports.js` runs after the ESM `tsc` build to append `.js` extensions to relative imports in `dist/`. This is required because `moduleResolution: "bundler"` emits extensionless relative imports (e.g. `from './foo'`), but Node.js ESM requires explicit `.js` extensions on relative specifiers. The CJS output is not patched — `require()` resolves extensionless paths natively. The post-build script skips `dist/cjs/` entirely.
 
 ## Validation
 
