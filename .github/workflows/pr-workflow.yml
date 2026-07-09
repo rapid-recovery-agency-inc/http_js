@@ -33,6 +33,9 @@ jobs:
       - name: Run tests
         if: github.event.pull_request.draft == false
         run: npm run test
+      - name: Validate build
+        if: github.event.pull_request.draft == false
+        run: npm run validate-build
       - name: Check for tests in PR
         if: github.event.pull_request.draft == false
         uses: rapid-recovery-agency-inc/check-for-tests-action@main

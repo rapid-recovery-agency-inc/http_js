@@ -27,10 +27,10 @@
     "access": "restricted"
   },
   "scripts": {
-    "precommit": "npm run lint && npm run format-check && npm run type-check && npm run test",
+    "precommit": "npm run lint && npm run format-check && npm run type-check && npm run test && npm run build",
     "prepublishOnly": "npm run build",
     "prepare": "husky",
-    "build": "rm -rf dist && tsc -p tsconfig.json && node scripts/patch-esm-imports.js && tsc -p tsconfig.cjs.json && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
+    "build": "rm -rf dist && node scripts/build.mjs && tsc --emitDeclarationOnly && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
     "clean": "rimraf dist",
     "format": "prettier --write \"{src,examples}/**/*.{ts,js,json,md}\" README.md",
     "format-check": "prettier --check \"{src,examples}/**/*.{ts,js,json,md}\" README.md",
@@ -38,7 +38,9 @@
     "lint-fix": "eslint \"src/**/*.ts\" --fix",
     "test": "jest --runInBand",
     "test-watch": "jest --watch",
-    "type-check": "tsc --noEmit -p tsconfig.json"
+    "type-check": "tsc --noEmit -p tsconfig.json",
+    "smoke-test": "node scripts/smoke-test.mjs",
+    "validate-build": "npm run build && npm run smoke-test"
   },
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.934.0",
@@ -56,6 +58,7 @@
     "@types/pg": "^8.15.5",
     "@typescript-eslint/eslint-plugin": "^8.47.0",
     "@typescript-eslint/parser": "^8.47.0",
+    "esbuild": "^0.28.1",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",

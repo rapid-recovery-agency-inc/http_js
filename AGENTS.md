@@ -86,22 +86,26 @@ The design intent is:
 
 ## Build Output
 
-The `build` script produces dual output:
+The `build` script uses esbuild to produce bundled output from two entry points:
 
-| Output           | Module format | Directory   | Config              |
-| ---------------- | ------------- | ----------- | ------------------- |
-| ESM (primary)    | ES modules    | `dist/`     | `tsconfig.json`     |
-| CJS (compatible) | CommonJS      | `dist/cjs/` | `tsconfig.cjs.json` |
+| Output           | Module format | Directory   | Entry point                    |
+| ---------------- | ------------- | ----------- | ------------------------------ |
+| ESM (primary)    | ES modules    | `dist/`     | `src/index.ts`                 |
+| CJS (compatible) | CommonJS      | `dist/cjs/` | `src/index.ts`                 |
+| CLI              | ES modules    | `dist/cli/` | `src/cli/setup-environment.ts` |
 
-- Both builds compile from the same `src/` source.
+- esbuild bundles each entry point into a single file with all internal modules inlined. All `dependencies` and `peerDependencies` are marked external.
+- Type declarations (`.d.ts` files) are generated separately via `tsc --emitDeclarationOnly`.
 - The CJS output includes a `dist/cjs/package.json` with `{"type":"commonjs"}` so Node.js loads `.js` files under that tree as CommonJS regardless of the root `"type":"module"`.
 - The `package.json` `exports` field maps `import` → `dist/index.js` and `require` → `dist/cjs/index.js`.
 - Consumers using CJS (e.g. NestJS apps bundled with webpack) should use `require('@rapid-recovery-agency-inc/http_js')` — no special webpack `conditionNames` or externals wrappers are needed.
-- **Post-build patching**: `scripts/patch-esm-imports.js` runs after the ESM `tsc` build to append `.js` extensions to relative imports in `dist/`. This is required because `moduleResolution: "bundler"` emits extensionless relative imports (e.g. `from './foo'`), but Node.js ESM requires explicit `.js` extensions on relative specifiers. The CJS output is not patched — `require()` resolves extensionless paths natively. The post-build script skips `dist/cjs/` entirely.
 
 ## Validation
 
 - `npm run lint`
 - `npm run type-check`
 - `npm run test`
+- `npm run build`
+- `npm run smoke-test`
+- `npm run validate-build`
 - `npm run precommit`
