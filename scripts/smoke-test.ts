@@ -1,17 +1,31 @@
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { resolve, dirname } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const distDir = resolve(__dirname, '..', 'dist');
+
+interface BundleExports {
+  createEnvironment: unknown;
+  createLogger: unknown;
+  InMemoryCache: unknown;
+  hmacMiddleware: unknown;
+  createPrismaClients: unknown;
+  rateLimiterMiddleware: unknown;
+  databaseRequestLoggerMiddleware: unknown;
+  fetchAwsSecret: unknown;
+}
 
 let failures = 0;
 
-function assert(condition, message) {
+function assert(condition: boolean, message: string): void {
   if (condition) {
+    // eslint-disable-next-line no-console -- CLI smoke test output
     console.log(`  PASS  ${message}`);
   } else {
+    // eslint-disable-next-line no-console -- CLI smoke test output
     console.error(`  FAIL  ${message}`);
     failures++;
   }
@@ -19,9 +33,10 @@ function assert(condition, message) {
 
 // ── ESM bundle ──────────────────────────────────────────────────────────────
 
+// eslint-disable-next-line no-console -- CLI smoke test section header
 console.log('ESM bundle (dist/index.js)');
 
-const esmBundle = await import(resolve(distDir, 'index.js'));
+const esmBundle = (await import(resolve(distDir, 'index.js'))) as BundleExports;
 
 // Value exports
 assert(
@@ -67,10 +82,11 @@ assert(
 
 // ── CJS bundle ──────────────────────────────────────────────────────────────
 
+// eslint-disable-next-line no-console -- CLI smoke test section header
 console.log('\nCJS bundle (dist/cjs/index.js)');
 
 const require_ = createRequire(import.meta.url);
-const cjsBundle = require_(resolve(distDir, 'cjs/index.js'));
+const cjsBundle = require_(resolve(distDir, 'cjs/index.js')) as BundleExports;
 
 assert(
   typeof cjsBundle.createEnvironment === 'function',
@@ -109,6 +125,7 @@ assert(
 
 // ── CLI bundle ──────────────────────────────────────────────────────────────
 
+// eslint-disable-next-line no-console -- CLI smoke test section header
 console.log('\nCLI bundle (dist/cli/setup-environment.js)');
 
 const cliContent = readFileSync(
@@ -128,15 +145,17 @@ assert(
 
 // ── CJS package.json ────────────────────────────────────────────────────────
 
+// eslint-disable-next-line no-console -- CLI smoke test section header
 console.log('\nCJS package.json');
 
 const cjsPkg = JSON.parse(
   readFileSync(resolve(distDir, 'cjs/package.json'), 'utf8'),
-);
+) as { type: string };
 assert(cjsPkg.type === 'commonjs', 'type is "commonjs"');
 
 // ── Summary ─────────────────────────────────────────────────────────────────
 
+// eslint-disable-next-line no-console -- CLI smoke test summary output
 console.log(
   `\n${failures === 0 ? 'All smoke tests passed!' : `${failures} smoke test(s) failed`}`,
 );

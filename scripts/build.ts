@@ -1,22 +1,27 @@
 import { build } from 'esbuild';
 import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const pkg = JSON.parse(
-  readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+  readFileSync(resolve(__dirname, '..', 'package.json'), 'utf8'),
 );
 
 const external = [
-  ...Object.keys(pkg.dependencies || {}),
-  ...Object.keys(pkg.peerDependencies || {}),
+  ...Object.keys(pkg.dependencies ?? {}),
+  ...Object.keys(pkg.peerDependencies ?? {}),
 ];
 
 const sharedOptions = {
   bundle: true,
-  platform: 'node',
+  platform: 'node' as const,
   target: 'node24',
   external,
   sourcemap: true,
-  logLevel: 'info',
+  logLevel: 'info' as const,
 };
 
 await Promise.all([
@@ -24,7 +29,7 @@ await Promise.all([
   build({
     ...sharedOptions,
     entryPoints: ['src/index.ts'],
-    format: 'esm',
+    format: 'esm' as const,
     outfile: 'dist/index.js',
   }),
 
@@ -32,7 +37,7 @@ await Promise.all([
   build({
     ...sharedOptions,
     entryPoints: ['src/index.ts'],
-    format: 'cjs',
+    format: 'cjs' as const,
     outfile: 'dist/cjs/index.js',
   }),
 
@@ -40,7 +45,7 @@ await Promise.all([
   build({
     ...sharedOptions,
     entryPoints: ['src/cli/setup-environment.ts'],
-    format: 'esm',
+    format: 'esm' as const,
     outfile: 'dist/cli/setup-environment.js',
     banner: {
       js: '#!/usr/bin/env node',
@@ -48,4 +53,5 @@ await Promise.all([
   }),
 ]);
 
+// eslint-disable-next-line no-console -- build tool CLI output
 console.log('esbuild bundles complete.');

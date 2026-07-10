@@ -34,6 +34,13 @@ The design intent is:
 | ------------------------------ | ------------------------------------------------------------------------------------------- |
 | `src/cli/setup-environment.ts` | fetches secrets, merges them into environment variables, and then executes your app command |
 
+### Scripts
+
+| Path                    | Role                                         |
+| ----------------------- | -------------------------------------------- |
+| `scripts/build.ts`      | esbuild bundling for ESM, CJS, and CLI       |
+| `scripts/smoke-test.ts` | Post-build smoke tests on the bundled output |
+
 ### Feature Modules
 
 | Path                         | Role                                                             |
@@ -60,6 +67,7 @@ The design intent is:
 
 - README: [README.md](README.md)
 - Public API: [src/index.ts](src/index.ts)
+- Scripts: [scripts](scripts/)
 - Modules root: [src/modules](src/modules)
 - Shared root: [src/shared](src/shared)
 - Cache: [src/modules/cache](src/modules/cache)
@@ -83,6 +91,7 @@ The design intent is:
 - Keep AWS helpers in `src/shared/utils/aws`.
 - Keep timeout-style helpers in `src/shared/utils/async`.
 - Prefer colocated tests inside the owning folder.
+- Keep all scripts in `scripts/` as TypeScript (`.ts`) files — run them via `tsx`.
 
 ## Build Output
 
