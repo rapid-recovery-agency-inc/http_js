@@ -28,16 +28,23 @@ The design intent is:
 | `src/index.ts` | Package-level public API barrel               |
 | `README.md`    | User-facing overview and development commands |
 
-### CLI 
+### CLI
 
-| Path                         | Role                                                             |
-| ---------------------------- | ------------------------------------------------------------     |
-| `src/cli/setup-environment.ts`| fetches secrets, merges them into environment variables, and then executes your app command |
+| Path                           | Role                                                                                        |
+| ------------------------------ | ------------------------------------------------------------------------------------------- |
+| `src/cli/setup-environment.ts` | fetches secrets, merges them into environment variables, and then executes your app command |
+
+### Scripts
+
+| Path                    | Role                                         |
+| ----------------------- | -------------------------------------------- |
+| `scripts/build.ts`      | esbuild bundling for ESM, CJS, and CLI       |
+| `scripts/smoke-test.ts` | Post-build smoke tests on the bundled output |
 
 ### Feature Modules
 
 | Path                         | Role                                                             |
-| ---------------------------- | ------------------------------------------------------------     |
+| ---------------------------- | ---------------------------------------------------------------- |
 | `src/modules/cache`          | Cache interfaces and cache backend implementations               |
 | `src/modules/hmac`           | HMAC signing, signature verification, and Express middleware     |
 | `src/modules/prisma`         | Schema-agnostic Prisma client and identifier helpers             |
@@ -60,6 +67,7 @@ The design intent is:
 
 - README: [README.md](README.md)
 - Public API: [src/index.ts](src/index.ts)
+- Scripts: [scripts](scripts/)
 - Modules root: [src/modules](src/modules)
 - Shared root: [src/shared](src/shared)
 - Cache: [src/modules/cache](src/modules/cache)
@@ -83,17 +91,20 @@ The design intent is:
 - Keep AWS helpers in `src/shared/utils/aws`.
 - Keep timeout-style helpers in `src/shared/utils/async`.
 - Prefer colocated tests inside the owning folder.
+- Keep all scripts in `scripts/` as TypeScript (`.ts`) files — run them via `tsx`.
 
 ## Build Output
 
-The `build` script produces dual output:
+The `build` script uses esbuild to produce bundled output from two entry points:
 
-| Output           | Module format | Directory   | Config              |
-| ---------------- | ------------- | ----------- | ------------------- |
-| ESM (primary)    | ES modules    | `dist/`     | `tsconfig.json`     |
-| CJS (compatible) | CommonJS      | `dist/cjs/` | `tsconfig.cjs.json` |
+| Output           | Module format | Directory   | Entry point                    |
+| ---------------- | ------------- | ----------- | ------------------------------ |
+| ESM (primary)    | ES modules    | `dist/`     | `src/index.ts`                 |
+| CJS (compatible) | CommonJS      | `dist/cjs/` | `src/index.ts`                 |
+| CLI              | ES modules    | `dist/cli/` | `src/cli/setup-environment.ts` |
 
-- Both builds compile from the same `src/` source.
+- esbuild bundles each entry point into a single file with all internal modules inlined. All `dependencies` and `peerDependencies` are marked external.
+- Type declarations (`.d.ts` files) are generated separately via `tsc --emitDeclarationOnly`.
 - The CJS output includes a `dist/cjs/package.json` with `{"type":"commonjs"}` so Node.js loads `.js` files under that tree as CommonJS regardless of the root `"type":"module"`.
 - The `package.json` `exports` field maps `import` → `dist/index.js` and `require` → `dist/cjs/index.js`.
 - Consumers using CJS (e.g. NestJS apps bundled with webpack) should use `require('@rapid-recovery-agency-inc/http_js')` — no special webpack `conditionNames` or externals wrappers are needed.
@@ -103,4 +114,7 @@ The `build` script produces dual output:
 - `npm run lint`
 - `npm run type-check`
 - `npm run test`
+- `npm run build`
+- `npm run smoke-test`
+- `npm run validate-build`
 - `npm run precommit`

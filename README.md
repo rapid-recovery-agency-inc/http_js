@@ -62,6 +62,20 @@ src/
 - See `AGENTS.md` at the repository root for the top-level map.
 - Each folder under `src/modules` and `src/shared` now has its own `AGENTS.md` with local implementation notes and navigation links.
 
+## Consumption
+
+This package ships bundled output from `src/index.ts`:
+
+| Consumer        | Entry               | Format           |
+| --------------- | ------------------- | ---------------- |
+| ESM (`import`)  | `dist/index.js`     | ES module bundle |
+| CJS (`require`) | `dist/cjs/index.js` | CommonJS bundle  |
+
+- **Always import from the package root** — `import { ... } from '@rapid-recovery-agency-inc/http_js'` or `require('@rapid-recovery-agency-inc/http_js')`.
+- **Do not deep-import from `dist/`** — individual module files no longer exist in the published output. The only supported entry point is the package root via the `exports` field. TypeScript declarations (`.d.ts` files) are provided for editor support but do not imply a runtime import path.
+- All `dependencies` and `peerDependencies` are external to the bundle — your runtime resolves them normally.
+- The `setup-environment` CLI is bundled separately and invoked via `npx setup-environment` or the `bin` entry.
+
 ## Development
 
 ```bash
