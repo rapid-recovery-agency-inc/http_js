@@ -48,3 +48,9 @@ request
 - Core implementation: [services.ts](services.ts)
 - Low-level helper: [utils.ts](utils.ts)
 - Tests: [**tests**/hmac.test.ts](__tests__/hmac.test.ts)
+
+## AWS-backed clients
+
+`createAwsHmacClient({ secretName, signatureHeader?, customHeaders? })` adapts an AWS secret name to the core client. Keep SDK fetch/parsing in `src/shared/utils/aws/hmac-secrets.ts`. The adapter uses default AWS region/credential resolution, rejects non-object/empty/non-string payloads, preserves Object.values order and hides JSON parse contents. The first value signs and every value verifies. The core client alone owns lazy resolution, shared in-flight calls, caching and retry. Do not use the generic fetchAwsSecret helper here: its logging/parsing contract is different.
+
+Adding the adapter must not change any existing HMAC export or canonicalization. Both ESM and CJS public entry points must expose the factory and its option type.

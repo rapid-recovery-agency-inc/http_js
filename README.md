@@ -85,3 +85,23 @@ npm run type-check
 npm run test
 npm run build
 ```
+
+### AWS-backed HMAC client
+
+```ts
+import { createAwsHmacClient } from '@rapid-recovery-agency-inc/http_js';
+
+const hmac = createAwsHmacClient({
+  secretName: 'development/hmac-keys',
+  signatureHeader: 'X-RRA-Signature',
+  customHeaders: [
+    { name: 'X-Tenant-Id', validate: (value) => value.trim().length > 0 },
+  ],
+});
+```
+
+This adapter keeps `createHmacClient` provider-independent. It retrieves SecretString lazily with the default AWS SDK credentials/region and accepts only a non-empty JSON object whose values are non-empty strings. Values retain their existing order: the first signs, and all values verify during rotation. It does not sort date-like keys or modify key bytes. Malformed JSON produces a sanitized error without logging its contents.
+
+The core client shares concurrent resolution, caches a successful result per client, and retries after a failed fetch or validation. Successful caches do not auto-refresh; recreate the client to reload rotated AWS keys. Existing injected-secret/resolver APIs and signature formats are unchanged.
+
+Release the package containing this additive export before updating consumer imports and dependency locks. For local integration, build and pack this checkout and test the packed artifact without publishing it.
