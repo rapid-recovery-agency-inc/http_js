@@ -8,6 +8,7 @@ const __dirname = dirname(__filename);
 const distDir = resolve(__dirname, '..', 'dist');
 
 interface BundleExports {
+  createAwsHmacClient: unknown;
   createEnvironment: unknown;
   createLogger: unknown;
   InMemoryCache: unknown;
@@ -37,6 +38,11 @@ function assert(condition: boolean, message: string): void {
 console.log('ESM bundle (dist/index.js)');
 
 const esmBundle = (await import(resolve(distDir, 'index.js'))) as BundleExports;
+
+assert(
+  typeof esmBundle.createAwsHmacClient === 'function',
+  'createAwsHmacClient is exported',
+);
 
 // Value exports
 assert(
@@ -87,6 +93,11 @@ console.log('\nCJS bundle (dist/cjs/index.js)');
 
 const require_ = createRequire(import.meta.url);
 const cjsBundle = require_(resolve(distDir, 'cjs/index.js')) as BundleExports;
+
+assert(
+  typeof cjsBundle.createAwsHmacClient === 'function',
+  'createAwsHmacClient is exported',
+);
 
 assert(
   typeof cjsBundle.createEnvironment === 'function',

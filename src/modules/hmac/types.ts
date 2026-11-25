@@ -33,6 +33,10 @@ interface HmacClientSharedOptions {
   signatureHeader?: string;
 }
 
+export interface AwsHmacClientOptions extends HmacClientSharedOptions {
+  secretName: string;
+}
+
 export type HmacClientOptions = HmacClientSharedOptions &
   (
     | {

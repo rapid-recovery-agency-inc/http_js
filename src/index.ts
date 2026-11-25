@@ -50,6 +50,7 @@ export {
 } from './modules/hmac/constants';
 export { HMACException, HmacError } from './modules/hmac/exceptions';
 export { createHmacClient } from './modules/hmac/client';
+export { createAwsHmacClient } from './modules/hmac/aws-client';
 export {
   buildHmacFactoryDependency,
   hmacMiddleware,
@@ -60,6 +61,7 @@ export type {
   HMACEnvironment,
   HMACFactoryDependency,
   HMACRequestLike,
+  AwsHmacClientOptions,
   HmacClientInstance,
   HmacClientOptions,
   HmacCustomHeaderRule,
