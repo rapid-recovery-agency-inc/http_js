@@ -99,18 +99,13 @@ function compareStrings(left: string, right: string): number {
 
 function buildSortedParams(
   params: Readonly<Record<string, unknown>> | null | undefined,
-  useLocaleOrder = false,
 ): string {
   if (params === null || params === undefined) {
     return '';
   }
 
   return Object.entries(params)
-    .sort(([leftKey], [rightKey]) =>
-      useLocaleOrder
-        ? leftKey.localeCompare(rightKey)
-        : compareStrings(leftKey, rightKey),
-    )
+    .sort(([leftKey], [rightKey]) => compareStrings(leftKey, rightKey))
     .map(([key, value]) => `${key}${String(value)}`)
     .join('');
 }
@@ -295,14 +290,10 @@ function buildCustomHeadersFragment(
 export function buildHmacMessage(
   input: HmacRequestInput,
   customHeaders: readonly HmacCustomHeaderRule[] = [],
-  legacyPatchDeleteQueryOrder = false,
 ): string {
   const method = normalizeHmacMethod(input.method);
   const path = encodeHmacPath(getPathFromUrl(input.url)).trim();
-  const params = buildSortedParams(
-    input.params,
-    legacyPatchDeleteQueryOrder && (method === 'PATCH' || method === 'DELETE'),
-  ).trim();
+  const params = buildSortedParams(input.params).trim();
   const body = normalizeBody(method, input.body).trim();
   const rules = normalizeCustomHeaderRules(customHeaders);
   const headers = buildCustomHeadersFragment(rules, input.headers).trim();

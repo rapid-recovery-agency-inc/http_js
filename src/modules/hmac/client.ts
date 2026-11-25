@@ -65,19 +65,8 @@ class HmacClient implements HmacClientInstance {
   public readonly signatureHeader: string;
   private readonly customHeaders: readonly HmacCustomHeaderRule[];
   private readonly resolveSecrets: HmacSecretResolver;
-  private readonly legacyPatchDeleteQueryOrder: boolean;
 
   public constructor(options: HmacClientOptions) {
-    if (
-      options.legacyPatchDeleteQueryOrder !== undefined &&
-      typeof options.legacyPatchDeleteQueryOrder !== 'boolean'
-    ) {
-      throw new Error(
-        'HmacClient requires legacyPatchDeleteQueryOrder to be a boolean when provided.',
-      );
-    }
-    this.legacyPatchDeleteQueryOrder =
-      options.legacyPatchDeleteQueryOrder === true;
     this.signatureHeader = normalizeSignatureHeader(options.signatureHeader);
     normalizeCustomHeaderRules(options.customHeaders);
     this.customHeaders = options.customHeaders ?? [];
@@ -87,11 +76,7 @@ class HmacClient implements HmacClientInstance {
   }
 
   public async sign(input: HmacRequestInput): Promise<string> {
-    const message = buildHmacMessage(
-      input,
-      this.customHeaders,
-      this.legacyPatchDeleteQueryOrder,
-    );
+    const message = buildHmacMessage(input, this.customHeaders);
     const secrets = await this.resolveSecrets();
     const secret = secrets[0];
 
@@ -106,11 +91,7 @@ class HmacClient implements HmacClientInstance {
     signature: string,
     input: HmacRequestInput,
   ): Promise<void> {
-    const message = buildHmacMessage(
-      input,
-      this.customHeaders,
-      this.legacyPatchDeleteQueryOrder,
-    );
+    const message = buildHmacMessage(input, this.customHeaders);
     await verifyHmacMessage(signature, message, await this.resolveSecrets());
   }
 }

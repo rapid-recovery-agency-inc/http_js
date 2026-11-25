@@ -54,7 +54,3 @@ request
 `createAwsHmacClient({ secretName, signatureHeader?, customHeaders? })` adapts an AWS secret name to the core client. Keep SDK fetch/parsing in `src/shared/utils/aws/hmac-secrets.ts`. The adapter uses default AWS region/credential resolution, rejects non-object/empty/non-string payloads, preserves Object.values order and hides JSON parse contents. The first value signs and every value verifies. The core client alone owns lazy resolution, shared in-flight calls, caching and retry. Do not use the generic fetchAwsSecret helper here: its logging/parsing contract is different.
 
 Adding the adapter must not change any existing HMAC export or canonicalization. Both ESM and CJS public entry points must expose the factory and its option type.
-
-## Explicit legacy query compatibility
-
-The optional `legacyPatchDeleteQueryOrder` client setting preserves the former SSO shim's `localeCompare` query-key ordering for PATCH/DELETE only. Default false and GET/POST must retain canonical codepoint ordering. Both generic and AWS-backed clients expose it. Keep ordering in core and cover signing, verification, defaults and AWS option forwarding; never enable the flag globally or accept multiple alternative messages implicitly.

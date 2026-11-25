@@ -29,8 +29,6 @@ export interface HmacRequestInput {
 export type HmacSecretResolver = () => Promise<readonly string[]>;
 
 interface HmacClientSharedOptions {
-  /** Preserve the former SSO shim locale ordering for PATCH/DELETE query keys only. Default false. */
-  legacyPatchDeleteQueryOrder?: boolean;
   customHeaders?: readonly HmacCustomHeaderRule[];
   signatureHeader?: string;
 }
