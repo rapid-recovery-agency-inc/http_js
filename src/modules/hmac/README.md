@@ -131,3 +131,9 @@ Available constants include `HMAC_MISSING_SIGNATURE`,
 - Keep sender and receiver canonicalization inputs identical.
 - Deploy communicating sender/receiver migrations together or retain the
   documented compatibility window.
+
+## Legacy PATCH/DELETE query order
+
+`createHmacClient` and `createAwsHmacClient` accept optional `legacyPatchDeleteQueryOrder: true` for consumers migrating from SSO's former private PATCH/DELETE verifier. It sorts those methods' query parameter names with `localeCompare`, preserving that shim's mixed-case/Unicode ordering. GET/POST retain canonical codepoint ordering. The option defaults to false, so all existing consumers keep their current signatures. This is one explicit ordering policy, not a fallback accepting multiple signature representations.
+
+SSO enables the option on its inbound client only. Keep this compatibility behavior in the shared core; consumers must not duplicate canonicalization. The legacy policy uses the runtime's default locale, matching the former shim; it is intended for compatibility rather than new protocols.
